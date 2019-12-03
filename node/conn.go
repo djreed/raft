@@ -86,6 +86,7 @@ func (n *Node) SendMessage(msg interface{}) {
 	if err != nil {
 		ERR.Panicf("(!!! %s !!!) -- %s\n", n.Id, err)
 	} else {
-		ERR.Printf("(SENDING %s) -- %v", n.Id, msg)
+		byteData, _ := json.Marshal(msg)
+		ERR.Printf("(SENDING %s) -- %s", n.Id, string(byteData))
 	}
 }
