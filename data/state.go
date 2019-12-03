@@ -56,8 +56,8 @@ type RaftState struct {
 func NewRaftState(neighborCount int) RaftState {
 	initialState := RaftState{
 		CurrentTerm: 0,
-		VotedFor:    "",
-		Log:         []LogEntry{},
+		VotedFor:    "",                  // Stand-in for `null`
+		Log:         make([]LogEntry, 1), // Index starts at `1`
 		CommitIndex: 0,
 		LastApplied: 0,
 		NextIndex:   make([]int, neighborCount, neighborCount), // Re-initialized on leader election

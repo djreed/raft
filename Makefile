@@ -1,5 +1,5 @@
 OUTFILE = 3700kvstore
-PROJECT_GOFILES = go.mod go.sum 
+PROJECT_GOFILES = ./*
 
 build: path vendor
 	go build -o $(OUTFILE)
@@ -20,3 +20,8 @@ clean:
 
 bundle:
 	tar -czvf $(OUTFILE).tar.gz $(PROJECT_GOFILES)
+
+copy:
+	scp -r $(OUTFILE).tar.gz reedda@login.ccs.neu.edu:/home/reedda/cs3700/raft
+
+publish: vendor build_linux bundle copy

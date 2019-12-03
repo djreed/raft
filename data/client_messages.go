@@ -29,7 +29,7 @@ type GetMessage struct {
 }
 
 type ReturnValue struct {
-	Value VAL_TYPE `json:"key"`
+	Val VAL_TYPE `json:"value"`
 }
 
 type GetResponse struct {
@@ -48,8 +48,8 @@ type GetFail struct {
 ///
 
 type PutMessageBody struct {
-	Key   KEY_TYPE `json:"key"`
-	Value VAL_TYPE `json:"value"`
+	Key KEY_TYPE `json:"key"`
+	Val VAL_TYPE `json:"value"`
 }
 
 type PutMessage struct {

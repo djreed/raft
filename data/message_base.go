@@ -17,6 +17,9 @@ type MessageCore struct {
 	MessageId MESSAGE_ID `json:"MID"`
 }
 
+// Anonymous incoming message
+type UnknownMessage = map[string]interface{}
+
 // MESSAGE_ID is a uniquely generated string
 type MESSAGE_ID string
 
