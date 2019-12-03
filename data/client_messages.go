@@ -25,7 +25,6 @@ type KeyRequest struct {
 
 type GetMessage struct {
 	*MessageCore
-	*MessageIdBase
 	*KeyRequest
 }
 
@@ -35,13 +34,13 @@ type ReturnValue struct {
 
 type GetResponse struct {
 	*MessageCore
-	*MessageIdBase
 	*ReturnValue
+	// Type of "ok"
 }
 
 type GetFail struct {
 	*MessageCore
-	*MessageIdBase
+	// Type of "fail"
 }
 
 ///
@@ -55,20 +54,20 @@ type PutMessageBody struct {
 
 type PutMessage struct {
 	*MessageCore
-	*MessageIdBase
 	*PutMessageBody
 }
 
 type PutResponse struct {
 	*MessageCore
-	*MessageIdBase
+	// Type of "ok" or "fail"
 }
 
 ///
 // Request to non-leader Node
 ///
 
+// TODO
 type RedirectMessage struct {
 	*MessageCore
-	*MessageIdBase
+	// Type of "redirect"
 }

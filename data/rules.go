@@ -1,5 +1,7 @@
 package data
 
+// TODO we don't need this file
+
 /*
 All Servers:
 • If commitIndex > lastApplied: increment lastApplied, apply

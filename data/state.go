@@ -1,5 +1,12 @@
 package data
 
+type LogEntry struct {
+	// EntryId ENTRY_INDEX `json:"id"`
+	Key   KEY_TYPE `json:"key"`
+	Value VAL_TYPE `json:"val"`
+	Type  MSG_TYPE `json:"type"`
+}
+
 type NodeState struct {
 	// currentTerm latest term server has seen (initialized to 0
 	// on first boot, increases monotonically)
@@ -12,7 +19,7 @@ type NodeState struct {
 	// log[] log entries; each entry contains command
 	// for state machine, and term when entry
 	// was received by leader (first index is 1)
-	Log []AppendMessage
+	Log []LogEntry
 
 	// commitIndex index of highest log entry known to be
 	// committed (initialized to 0, increases
