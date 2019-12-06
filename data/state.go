@@ -74,3 +74,51 @@ func NewRaftState(neighborCount int) RaftState {
 	}
 	return initialState
 }
+
+// Vote tracking
+
+func (s *RaftState) VoteFor(candidate NODE_ID) {
+	s.VotedFor = candidate
+}
+
+// Terms
+
+func (s *RaftState) IncrementTerm() {
+	s.CurrentTerm++
+}
+
+// Log Indices
+
+func (s *RaftState) ResetLeaderIndices() {
+	for idx, _ := range s.NextIndex {
+		s.NextIndex[idx] = s.LastLogIndex() // Leader Last Log Index + 1
+	}
+
+	for idx, _ := range s.MatchIndex {
+		s.MatchIndex[idx] = 0
+	}
+}
+
+func (s *RaftState) LastLogIndex() ENTRY_INDEX {
+	l := len(s.Log)
+	if l > 0 {
+		return ENTRY_INDEX(l - 1)
+	} else {
+		return 0 // TODO: Validate correct default
+	}
+}
+
+func (s *RaftState) LastLogTerm() TERM_ID {
+	l := len(s.Log)
+	if l > 0 {
+		return s.Log[l-1].Term
+	} else {
+		return s.CurrentTerm // TODO: Validate correct default
+	}
+}
+
+// Log values
+
+func (s *RaftState) AppendLog(entries ...LogEntry) {
+	s.Log = append(s.Log, entries...)
+}

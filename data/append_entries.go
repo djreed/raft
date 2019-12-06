@@ -1,8 +1,10 @@
 package data
 
-type AppendCore struct {
-	// NOTE: Term ID from TermCore
-	// NOTE: Leader ID from MessageCore
+type ENTRY_INDEX uint32
+
+type AppendEntries struct {
+	*MessageCore
+	*TermCore
 
 	// Index of log entry immediately preceding new ones
 	PrevLogIndex ENTRY_INDEX `json:"prevLogIndex"`
@@ -17,21 +19,10 @@ type AppendCore struct {
 	LeaderCommit ENTRY_INDEX `json:"leaderCommit"`
 }
 
-type ENTRY_INDEX uint32
-
-type AppendEntries struct {
-	*MessageCore
-	*TermCore
-	*AppendCore
-}
-
-type AppendEntriesResponseData struct {
-	// Whether the log entry was successfully appended (and applied, if needed)
-	Success bool `json:"success"`
-}
-
 type AppendEntriesResponse struct {
 	*MessageCore
 	*TermCore
-	*AppendEntriesResponseData
+
+	// Whether all of the entries here were appended/committed successfully
+	Success bool `json:"success"`
 }

@@ -19,22 +19,14 @@ type VAL_TYPE string
 // Client GET
 ///
 
-type KeyRequest struct {
-	Key KEY_TYPE `json:"key"`
-}
-
 type GetMessage struct {
 	*MessageCore
-	*KeyRequest
-}
-
-type ReturnValue struct {
-	Val VAL_TYPE `json:"value"`
+	Key KEY_TYPE `json:"key"`
 }
 
 type GetResponse struct {
 	*MessageCore
-	*ReturnValue
+	Val VAL_TYPE `json:"value"`
 	// Type of "ok"
 }
 
@@ -47,14 +39,10 @@ type GetFail struct {
 // Client PUT
 ///
 
-type PutMessageBody struct {
-	Key KEY_TYPE `json:"key"`
-	Val VAL_TYPE `json:"value"`
-}
-
 type PutMessage struct {
 	*MessageCore
-	*PutMessageBody
+	Key KEY_TYPE `json:"key"`
+	Val VAL_TYPE `json:"value"`
 }
 
 type PutResponse struct {
@@ -66,7 +54,6 @@ type PutResponse struct {
 // Request to non-leader Node
 ///
 
-// TODO
 type RedirectMessage struct {
 	*MessageCore
 	// Type of "redirect"

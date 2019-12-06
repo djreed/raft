@@ -6,24 +6,24 @@ import "github.com/djreed/raft/data"
 func HandleRequestVote(n *Node, vote data.RequestVote) data.MessageList {
 	responseCore := CreateResponseCore(n, data.VOTE_MSG, *vote.MessageCore)
 
-	responseData := &data.RequestVoteResponseData{
+	response := data.RequestVoteResponse{
+		MessageCore: responseCore,
+		TermCore:    vote.TermCore,
 		VoteGranted: false,
 	}
 
-	response := data.RequestVoteResponse{
-		responseCore,
-		vote.TermCore,
-		responseData,
-	}
+	OUT.Printf("\n(%v) AAAAAAAAAAAAAAAAAA\n%+v\nAAAAAAAAAAAAAAAAAAAAA\n", n.Id, n.State)
+	OUT.Printf("\n(%v) OOOOOOOOOOOOOOOOOO\n%+v\nOOOOOOOOOOOOOOOOOOOOO\n", n.Id, vote)
 
 	// 1. Reply false if term < currentTerm (§5.1)
 	if vote.TermId >= n.State.CurrentTerm {
-		//2. If votedFor is null or candidateId...
+		// 2. If votedFor is null or candidateId...
 		if n.State.VotedFor == "" || n.State.VotedFor == vote.CandidateId {
 			// and candidate’s log is at least as up-to-date as receiver’s log...
 			if UpToDate(n, vote.LastLogIndex, vote.LastLogTerm) {
-				responseData.VoteGranted = true
-				n.VoteFor(vote.CandidateId) // grant vote (§5.2, §5.4)
+				response.VoteGranted = true
+				n.State.VoteFor(vote.CandidateId) // grant vote (§5.2, §5.4)
+				n.ResetElectionTimeout()
 			}
 		}
 	}
@@ -36,7 +36,7 @@ func HandleRequestVoteResponse(n *Node, voteRes data.RequestVoteResponse) data.M
 	if voteRes.VoteGranted {
 		n.IncrementVotes()
 		if n.VoteQuorum() {
-			ERR.Println("!!! I AM NOW THE LEADER, BOW BEFORE ME !!!")
+			OUT.Println("!!! I AM NOW THE LEADER, BOW BEFORE ME !!!")
 			n.BecomeLeader()
 		}
 	}

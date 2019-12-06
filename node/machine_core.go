@@ -7,35 +7,28 @@ func (n *Node) StateMachine() error {
 		var responses []interface{}
 		select {
 		case <-n.ElectionTimeout:
-			ERR.Println("!!! ELECTION TIMEOUT !!!")
+			OUT.Printf("(%v) -- !!! ELECTION TIMEOUT !!!", n.Id)
 			responses = HandleElectionTimeout(n)
-			break
 
 			// case <-n.HeartbeatTimeout: // TODO
 
-		case rv := <-n.RequestVotes:
-			responses = HandleRequestVote(n, rv)
-			break
-
-		case ae := <-n.AppendEntries:
-			responses = HandleAppendEntries(n, ae)
-			break
-
 		case rvr := <-n.RequestVoteResponses:
 			responses = HandleRequestVoteResponse(n, rvr)
-			break
 
 		case aer := <-n.AppendEntryResponses:
 			responses = HandleAppendEntriesResponse(n, aer)
-			break
+
+		case rv := <-n.RequestVotes:
+			responses = HandleRequestVote(n, rv)
+
+		case ae := <-n.AppendEntries:
+			responses = HandleAppendEntries(n, ae)
 
 		case get := <-n.GetMessages:
 			responses = HandleGet(n, get)
-			break
 
 		case put := <-n.PutMessages:
 			responses = HandlePut(n, put)
-			break
 
 		}
 

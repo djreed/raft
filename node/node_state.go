@@ -18,7 +18,7 @@ func (n *Node) BecomeFollower(leader data.NODE_ID) {
 func (n *Node) BecomeCandidate() {
 	n.SetRole(data.CANDIDATE)
 	n.SetLeader(data.UNKNOWN_LEADER)
-	n.IncrementTerm()
+	n.State.IncrementTerm()
 	n.ResetVotes()
 	n.VoteForSelf()
 	n.ResetElectionTimeout()
@@ -34,12 +34,13 @@ func (n *Node) BecomeLeader() {
 }
 
 const (
-	electBase = time.Duration(150 * time.Millisecond)
+	electBase  = time.Duration(150 * time.Millisecond)
+	electRange = 150
 )
 
-// 150-250ms
+// 150-300ms
 func NewElectionTimeout() <-chan time.Time {
-	randomScale := time.Duration(time.Duration(rand.Int()) * time.Millisecond)
+	randomScale := time.Duration(time.Duration(rand.Int31n(150)) * time.Millisecond)
 	return time.After(randomScale + electBase)
 }
 
@@ -53,17 +54,13 @@ func (n *Node) ResetVotes() {
 	n.Votes = 0
 }
 
-func (n *Node) VoteFor(candidate data.NODE_ID) {
-	n.State.VotedFor = candidate
-}
-
 func (n *Node) VoteForSelf() {
-	n.VoteFor(n.Id)
+	n.State.VoteFor(n.Id)
 	n.IncrementVotes()
 }
 
 func (n *Node) IncrementVotes() {
-	n.Votes++
+	n.Votes += 1
 }
 
 func (n *Node) VoteQuorum() bool {
@@ -102,46 +99,4 @@ func (n *Node) ResetHeartbeatTimeout() {
 
 func (n *Node) UnsetHeartbeatTimeout() {
 	n.HeartbeatTimeout = nil
-}
-
-// Terms
-
-func (n *Node) IncrementTerm() {
-	n.State.CurrentTerm++
-}
-
-// Log Indices
-
-func (n *Node) ResetLeaderIndices() {
-	for idx, _ := range n.State.NextIndex {
-		n.State.NextIndex[idx] = n.LastLogIndex() // Leader Last Log Index + 1
-	}
-
-	for idx, _ := range n.State.MatchIndex {
-		n.State.MatchIndex[idx] = 0
-	}
-}
-
-func (n *Node) LastLogIndex() data.ENTRY_INDEX {
-	l := len(n.State.Log)
-	if l > 0 {
-		return data.ENTRY_INDEX(l - 1)
-	} else {
-		return 0 // TODO: Validate correct default
-	}
-}
-
-func (n *Node) LastLogTerm() data.TERM_ID {
-	l := len(n.State.Log)
-	if l > 0 {
-		return n.State.Log[l-1].Term
-	} else {
-		return n.State.CurrentTerm // TODO: Validate correct default
-	}
-}
-
-// Log values
-
-func (n *Node) AppendLog(entries ...data.LogEntry) {
-	n.State.Log = append(n.State.Log, entries...)
 }
