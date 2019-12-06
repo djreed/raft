@@ -24,11 +24,16 @@ type Node struct {
 	Neighbors []data.NODE_ID
 	Leader    data.NODE_ID
 
+	Role data.NODE_STATE
+
 	// Single UNIX domain socket, emulating Ethernet
 	Socket Socket
 
-	Data      map[data.KEY_TYPE]data.VAL_TYPE
-	RaftState data.RaftState
+	Data  map[data.KEY_TYPE]data.VAL_TYPE
+	State data.RaftState
+
+	// Quorum Tracking
+	Votes int // How many neighbors have voted for me
 
 	// A Channel for each data type we need to handle
 	RequestVotes         chan data.RequestVote
@@ -57,7 +62,7 @@ func NewNode(id data.NODE_ID, neighbors []data.NODE_ID) Node {
 		Neighbors:     neighbors,
 		Socket:        unixSock,
 		Data:          make(map[data.KEY_TYPE]data.VAL_TYPE),
-		RaftState:     initialRaftState,
+		State:         initialRaftState,
 		RequestVotes:  make(chan data.RequestVote, CHAN_BUFFER),
 		AppendEntries: make(chan data.AppendEntries, CHAN_BUFFER),
 		GetMessages:   make(chan data.GetMessage, CHAN_BUFFER),

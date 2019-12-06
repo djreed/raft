@@ -24,3 +24,5 @@ type UnknownMessage = map[string]interface{}
 type MESSAGE_ID string
 
 type MSG_TYPE string
+
+type MessageList = []interface{}

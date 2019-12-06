@@ -5,46 +5,52 @@ import "github.com/djreed/raft/data"
 func (n *Node) StateMachine() error {
 	for {
 		var shouldRespond bool
-		var response interface{}
+		var responses []interface{}
 		select {
-		case msg := <-n.RequestVotes: // TODO
-			shouldRespond, response = HandleRequestVote(n, msg)
+		case rv := <-n.RequestVotes:
+			responses = HandleRequestVote(n, rv)
 			break
 
-		case msg := <-n.AppendEntries: // TODO
-			shouldRespond, response = HandleAppendEntries(n, msg)
+		case ae := <-n.AppendEntries:
+			responses = HandleAppendEntries(n, ae)
 			break
 
-		case msg := <-n.RequestVoteResponses: // TODO
-			shouldRespond, response = HandleRequestVoteResponse(n, msg)
+		case rvr := <-n.RequestVoteResponses:
+			responses = HandleRequestVoteResponse(n, rvr)
 			break
 
-		case msg := <-n.AppendEntryResponses: // TODO
-			shouldRespond, response = HandleAppendEntriesResponse(n, msg)
+		case aer := <-n.AppendEntryResponses:
+			responses = HandleAppendEntriesResponse(n, aer)
 			break
 
-		case msg := <-n.GetMessages: // TODO
-			shouldRespond, response = HandleGet(n, msg)
+		case get := <-n.GetMessages:
+			responses = HandleGet(n, get)
 			break
 
-		case msg := <-n.PutMessages: // TODO
-			shouldRespond, response = HandlePut(n, msg)
+		case put := <-n.PutMessages:
+			responses = HandlePut(n, put)
 			break
 
-			// case msg := <-n.ElectionTimeout: // TODO
+		case <-n.ElectionTimeout:
+			responses = HandleElectionTimeout(n)
+			break
+
+			// TODO
 			//
-			// case msg := <-n.HeartbeatTimeout: // TODO
+			// case <-n.HeartbeatTimeout: // TODO
 
 		}
 
 		if shouldRespond {
-			n.SendMessage(response)
+			for _, response := range responses {
+				n.SendMessage(response)
+			}
 		}
 	}
 }
 
-func (n *Node) CreateResponseCore(msgType data.MSG_TYPE, msg data.MessageCore) data.MessageCore {
-	return data.MessageCore{
+func (n *Node) CreateResponseCore(msgType data.MSG_TYPE, msg data.MessageCore) *data.MessageCore {
+	return &data.MessageCore{
 		Source:    n.Id,
 		Dest:      msg.Source,
 		Leader:    n.Id, // n.Leader, // TODO TODO TODO
@@ -53,32 +59,12 @@ func (n *Node) CreateResponseCore(msgType data.MSG_TYPE, msg data.MessageCore) d
 	}
 }
 
-func HandleRequestVote(n *Node, vote data.RequestVote) (bool, interface{}) {
-	return true, n.CreateResponseCore(data.FAIL, *vote.MessageCore)
+func UpToDate(n *Node, lastLogIndex data.ENTRY_INDEX, lastLogTerm data.TERM_ID) bool {
+	// TODO
+	return true
 }
 
-func HandleAppendEntries(n *Node, appendEntries data.AppendEntries) (bool, interface{}) {
-	return true, n.CreateResponseCore(data.FAIL, *appendEntries.MessageCore)
-}
-
-func HandleRequestVoteResponse(n *Node, voteRes data.RequestVoteResponse) (bool, interface{}) {
-	return true, n.CreateResponseCore(data.FAIL, *voteRes.MessageCore)
-
-}
-
-func HandleAppendEntriesResponse(n *Node, appendRes data.AppendEntriesResponse) (bool, interface{}) {
-	return true, n.CreateResponseCore(data.FAIL, *appendRes.MessageCore)
-
-}
-
-func HandleGet(n *Node, get data.GetMessage) (bool, interface{}) {
-	val := n.Get(get.Key)
-	core := n.CreateResponseCore(data.OK, *get.MessageCore)
-	return true, data.GetResponse{MessageCore: &core, ReturnValue: &data.ReturnValue{val}}
-}
-
-func HandlePut(n *Node, put data.PutMessage) (bool, interface{}) {
-	n.Set(put.Key, put.Val)
-	core := n.CreateResponseCore(data.OK, *put.MessageCore)
-	return true, core
+func MakeList(data ...interface{}) []interface{} {
+	vals := make([]interface{}, 0)
+	return append(vals, data)
 }

@@ -8,18 +8,27 @@ const (
 	COMMIT  = ENTRY_TYPE("commit")
 )
 
+type NODE_STATE int
+
+const (
+	FOLLOWER  = NODE_STATE(1)
+	CANDIDATE = NODE_STATE(2)
+	LEADER    = NODE_STATE(3)
+)
+
 type LogEntry struct {
 	// EntryId ENTRY_INDEX `json:"id"`
 	Key   KEY_TYPE   `json:"key"`
 	Value VAL_TYPE   `json:"val"`
 	Type  ENTRY_TYPE `json:"type"`
+	Term  TERM_ID    `json:"term"` // Ignore in JSON
 }
 
 // RaftState is the state used for Consensus and log replication
 type RaftState struct {
 	// currentTerm latest term server has seen (initialized to 0
 	// on first boot, increases monotonically)
-	CurrentTerm int
+	CurrentTerm TERM_ID
 
 	// votedFor candidateId that received vote in current
 	// term (or null if none)

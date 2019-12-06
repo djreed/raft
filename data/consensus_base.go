@@ -10,6 +10,10 @@ const (
 	VOTE_RES   = MSG_TYPE("voteResponse")
 )
 
+const (
+	UNKNOWN_LEADER = NODE_ID("FFFF")
+)
+
 type TERM_ID uint32
 
 type TermCore struct {
