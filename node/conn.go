@@ -31,37 +31,37 @@ func (n *Node) HandleConn() {
 		var decodeErr error
 		// Ravioli Ravioli Give Me The PANIC: NIL POINTER
 		switch data.MSG_TYPE(baseMsg["type"].(string)) {
-		case data.GET:
+		case data.GET_MSG:
 			var getMsg data.GetMessage
 			decodeErr = json.Unmarshal(byteData, &getMsg)
 			n.GetMessages <- getMsg
 			break
 
-		case data.PUT:
+		case data.PUT_MSG:
 			var putMsg data.PutMessage
 			decodeErr = json.Unmarshal(byteData, &putMsg)
 			n.PutMessages <- putMsg
 			break
 
-		case data.APPEND:
+		case data.APPEND_MSG:
 			var appendMsg data.AppendEntries
 			decodeErr = json.Unmarshal(byteData, &appendMsg)
 			n.AppendEntries <- appendMsg
 			break
 
-		case data.VOTE:
+		case data.VOTE_MSG:
 			var voteMsg data.RequestVote
 			decodeErr = json.Unmarshal(byteData, &voteMsg)
 			n.RequestVotes <- voteMsg
 			break
 
-		case data.APPEND_RES:
+		case data.APPEND_RES_MSG:
 			var appendResponse data.AppendEntriesResponse
 			decodeErr = json.Unmarshal(byteData, &appendResponse)
 			n.AppendEntryResponses <- appendResponse
 			break
 
-		case data.VOTE_RES:
+		case data.VOTE_RES_MSG:
 			var voteResponse data.RequestVoteResponse
 			decodeErr = json.Unmarshal(byteData, &voteResponse)
 			n.RequestVoteResponses <- voteResponse

@@ -2,11 +2,11 @@ package data
 
 const (
 	// Interface (Client) Messages
-	GET      = MSG_TYPE("get")
-	PUT      = MSG_TYPE("put")
-	OK       = MSG_TYPE("ok")
-	FAIL     = MSG_TYPE("fail")
-	REDIRECT = MSG_TYPE("redirect")
+	GET_MSG      = MSG_TYPE("get")
+	PUT_MSG      = MSG_TYPE("put")
+	OK_MSG       = MSG_TYPE("ok")
+	FAIL_MSG     = MSG_TYPE("fail")
+	REDIRECT_MSG = MSG_TYPE("redirect")
 )
 
 ///

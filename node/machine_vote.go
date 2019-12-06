@@ -4,7 +4,7 @@ import "github.com/djreed/raft/data"
 
 // TODO if we get a term > currentTerm, convert to Follower, set term to higher
 func HandleRequestVote(n *Node, vote data.RequestVote) data.MessageList {
-	responseCore := n.CreateResponseCore(data.OK, *vote.MessageCore)
+	responseCore := CreateResponseCore(n, data.OK_MSG, *vote.MessageCore)
 
 	responseData := &data.RequestVoteResponseData{
 		VoteGranted: false,
@@ -32,7 +32,7 @@ func HandleRequestVote(n *Node, vote data.RequestVote) data.MessageList {
 }
 
 func HandleRequestVoteResponse(n *Node, voteRes data.RequestVoteResponse) data.MessageList {
-	return MakeList(n.CreateResponseCore(data.FAIL, *voteRes.MessageCore))
+	return MakeList(CreateResponseCore(n, data.FAIL_MSG, *voteRes.MessageCore))
 }
 
 func VoteFor(n *Node, candidate data.NODE_ID) {

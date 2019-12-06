@@ -35,8 +35,6 @@ func (n *Node) StateMachine() error {
 			responses = HandleElectionTimeout(n)
 			break
 
-			// TODO
-			//
 			// case <-n.HeartbeatTimeout: // TODO
 
 		}
@@ -49,7 +47,7 @@ func (n *Node) StateMachine() error {
 	}
 }
 
-func (n *Node) CreateResponseCore(msgType data.MSG_TYPE, msg data.MessageCore) *data.MessageCore {
+func CreateResponseCore(n *Node, msgType data.MSG_TYPE, msg data.MessageCore) *data.MessageCore {
 	return &data.MessageCore{
 		Source:    n.Id,
 		Dest:      msg.Source,

@@ -83,7 +83,24 @@ func OpenSocket(id data.NODE_ID) Socket {
 
 func (n *Node) StartNode() error {
 	go n.HandleConn()
+	n.BecomeFollower(data.UNKNOWN_LEADER)
 	return n.StateMachine()
+}
+
+func (n *Node) NewMessageCore(dest data.NODE_ID, msgType data.MSG_TYPE) *data.MessageCore {
+	return &data.MessageCore{
+		Source:    n.Id,
+		Dest:      dest,
+		Leader:    n.Leader,
+		Type:      msgType,
+		MessageId: data.NewMessageId(),
+	}
+}
+
+func (n *Node) NewTermCore() *data.TermCore {
+	return &data.TermCore{
+		TermId: n.State.CurrentTerm,
+	}
 }
 
 func (n *Node) Get(key data.KEY_TYPE) data.VAL_TYPE {

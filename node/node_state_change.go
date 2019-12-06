@@ -7,8 +7,11 @@ import (
 	"github.com/djreed/raft/data"
 )
 
-func BecomeFollower(n *Node) {
-	// TODO
+func (n *Node) BecomeFollower(leader data.NODE_ID) {
+	n.SetRole(data.FOLLOWER)
+	n.ResetVotes()
+	n.SetLeader(data.UNKNOWN_LEADER)
+	n.ResetElectionTimeout()
 }
 
 /*
@@ -17,17 +20,17 @@ func BecomeFollower(n *Node) {
     • Vote for self
     • Reset election timer
 */
-func BecomeCandidate(n *Node) {
-	ResetVotes(n)
-	VoteForSelf(n)
-	SetRole(n, data.CANDIDATE)
-	SetLeader(n, data.UNKNOWN_LEADER)
-	ResetElectionTimeout(n)
+func (n *Node) BecomeCandidate() {
+	n.SetRole(data.CANDIDATE)
+	n.ResetVotes()
+	n.VoteForSelf()
+	n.SetLeader(data.UNKNOWN_LEADER)
+	n.ResetElectionTimeout()
 	// TODO potentially reset additional state
 }
 
-func BecomeLeader(n *Node) {
-	// TODO
+func (n *Node) BecomeLeader() {
+	n.ResetVotes()
 }
 
 const (
@@ -44,27 +47,27 @@ func NewHeartbeatTimeout() <-chan time.Time {
 	return time.After(electBase / 20)
 }
 
-func ResetVotes(n *Node) {
+func (n *Node) ResetVotes() {
 	n.Votes = 0
 }
 
-func VoteForSelf(n *Node) {
+func (n *Node) VoteForSelf() {
 	VoteFor(n, n.Id)
 	n.Votes += 1
 }
 
-func SetRole(n *Node, role data.NODE_STATE) {
+func (n *Node) SetRole(role data.NODE_STATE) {
 	n.Role = role
 }
 
-func SetLeader(n *Node, leader data.NODE_ID) {
+func (n *Node) SetLeader(leader data.NODE_ID) {
 	n.Leader = leader
 }
 
-func ResetElectionTimeout(n *Node) {
+func (n *Node) ResetElectionTimeout() {
 	n.ElectionTimeout = NewElectionTimeout()
 }
 
-func IncrementTerm(n *Node) {
+func (n *Node) IncrementTerm() {
 	n.State.CurrentTerm++
 }

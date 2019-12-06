@@ -60,7 +60,7 @@ Nodes are in one of three roles:
   "leader": "<ID>",
   "type": "ok" | "fail",
   "MID": "<a unique string>",
-  "value": "<value of the key>" _(if OK)_
+  "value": "<value of the key>" _(if OK_MSG)_
 }
 ```
 

@@ -1,5 +1,7 @@
 package data
 
+import "github.com/google/uuid"
+
 /*
   All Messages contain AT LEAST:
   - src
@@ -26,3 +28,7 @@ type MESSAGE_ID string
 type MSG_TYPE string
 
 type MessageList = []interface{}
+
+func NewMessageId() MESSAGE_ID {
+	return MESSAGE_ID(uuid.New().String())
+}
