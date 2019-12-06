@@ -15,6 +15,6 @@ func HandleGet(n *Node, get data.GetMessage) data.MessageList {
 	} else {
 		// Redirect
 		// core := n.NewMessageCoreId(get.Source, data.REDIRECT_MSG, get.MessageId)
-		return MakeList(nil)
+		return MakeList()
 	}
 }

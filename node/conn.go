@@ -24,12 +24,12 @@ func (n *Node) HandleConn() {
 		decoder.Decode(&baseMsg)
 
 		byteData, _ := json.Marshal(baseMsg)
+		OUT.Printf("(RECEIVED %s) -- %s\n", n.Id, string(byteData))
 
 		// Decode JSON into correct message type
 		// Send along corresponding channel
 
 		var decodeErr error
-		// Ravioli Ravioli Give Me The PANIC: NIL POINTER
 		switch data.MSG_TYPE(baseMsg["type"].(string)) {
 		case data.GET_MSG:
 			var getMsg data.GetMessage
@@ -73,8 +73,6 @@ func (n *Node) HandleConn() {
 
 		if decodeErr != nil {
 			OUT.Panicf("(!!! %s !!!) %s\n", n.Id, decodeErr)
-		} else {
-			OUT.Printf("(RECEIVED %s) -- %s\n", n.Id, string(byteData))
 		}
 	}
 }

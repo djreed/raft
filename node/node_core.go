@@ -58,15 +58,17 @@ func NewNode(id data.NODE_ID, neighbors []data.NODE_ID) Node {
 	initialRaftState := data.NewRaftState(len(neighbors))
 
 	initialNode := Node{
-		Id:            id,
-		Neighbors:     neighbors,
-		Socket:        unixSock,
-		Data:          make(map[data.KEY_TYPE]data.VAL_TYPE),
-		State:         initialRaftState,
-		RequestVotes:  make(chan data.RequestVote, CHAN_BUFFER),
-		AppendEntries: make(chan data.AppendEntries, CHAN_BUFFER),
-		GetMessages:   make(chan data.GetMessage, CHAN_BUFFER),
-		PutMessages:   make(chan data.PutMessage, CHAN_BUFFER),
+		Id:                   id,
+		Neighbors:            neighbors,
+		Socket:               unixSock,
+		Data:                 make(map[data.KEY_TYPE]data.VAL_TYPE),
+		State:                initialRaftState,
+		RequestVotes:         make(chan data.RequestVote, CHAN_BUFFER),
+		AppendEntries:        make(chan data.AppendEntries, CHAN_BUFFER),
+		RequestVoteResponses: make(chan data.RequestVoteResponse, CHAN_BUFFER),
+		AppendEntryResponses: make(chan data.AppendEntriesResponse, CHAN_BUFFER),
+		GetMessages:          make(chan data.GetMessage, CHAN_BUFFER),
+		PutMessages:          make(chan data.PutMessage, CHAN_BUFFER),
 	}
 
 	return initialNode

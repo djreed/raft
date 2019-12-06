@@ -11,6 +11,6 @@ func HandlePut(n *Node, put data.PutMessage) data.MessageList {
 	} else {
 		// Redirect
 		// core := n.NewMessageCoreId(put.Source, data.REDIRECT_MSG, put.MessageId)
-		return MakeList(nil)
+		return MakeList()
 	}
 }

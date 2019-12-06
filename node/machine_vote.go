@@ -32,7 +32,6 @@ func HandleRequestVote(n *Node, vote data.RequestVote) data.MessageList {
 func HandleRequestVoteResponse(n *Node, voteRes data.RequestVoteResponse) data.MessageList {
 	if voteRes.VoteGranted {
 		n.IncrementVotes()
-		OUT.Printf("(%v) Vote count -- %d", n.Id, n.Votes)
 		if n.VoteQuorum() {
 			OUT.Printf("(%v) !!! I AM NOW THE LEADER, BOW BEFORE ME !!!", n.Id)
 			n.BecomeLeader()

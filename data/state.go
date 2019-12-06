@@ -122,3 +122,15 @@ func (s *RaftState) LastLogTerm() TERM_ID {
 func (s *RaftState) AppendLog(entries ...LogEntry) {
 	s.Log = append(s.Log, entries...)
 }
+
+// Neighbor index tracking
+
+// Index of start of log entries to send
+func (s *RaftState) IndexToSend(neighborIdx int) ENTRY_INDEX {
+	return s.NextIndex[neighborIdx]
+}
+
+// Index of most up to date committed (replicated) log entry
+func (s *RaftState) IndexReplicated(neighborIdx int) ENTRY_INDEX {
+	return s.MatchIndex[neighborIdx]
+}

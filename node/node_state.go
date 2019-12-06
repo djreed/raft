@@ -33,19 +33,15 @@ func (n *Node) BecomeLeader() {
 	n.ResetHeartbeatTimeout()
 }
 
-const (
-	electBase  = time.Duration(150 * time.Millisecond)
-	electRange = 150
-)
+// Timeout reset
 
-// 150-300ms
 func NewElectionTimeout() <-chan time.Time {
-	randomScale := time.Duration(time.Duration(rand.Int31n(150)) * time.Millisecond)
-	return time.After(randomScale + electBase)
+	randomScale := time.Duration(time.Duration(rand.Int31n(electRange)) * time.Millisecond)
+	return time.After(electBase + randomScale)
 }
 
 func NewHeartbeatTimeout() <-chan time.Time {
-	return time.After(electBase / 10)
+	return time.After(electBase / heartbeatScale)
 }
 
 // Votes
