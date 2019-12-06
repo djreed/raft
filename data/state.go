@@ -77,7 +77,7 @@ func NewRaftState(neighborCount int) RaftState {
 
 // Vote tracking
 
-func (s *RaftState) VoteFor(candidate NODE_ID) {
+func (s *RaftState) SetVotedFor(candidate NODE_ID) {
 	s.VotedFor = candidate
 }
 

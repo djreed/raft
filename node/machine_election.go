@@ -17,7 +17,7 @@ func HandleElectionTimeout(n *Node) data.MessageList {
 			LastLogTerm:  n.State.LastLogTerm(),
 		}
 
-		OUT.Printf("(%v) %v\n", n.Id, request)
+		OUT.Printf("(%v) %+v\n", n.Id, request)
 
 		messages = append(messages, request)
 	}

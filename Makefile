@@ -24,4 +24,4 @@ bundle:
 copy:
 	scp -r $(OUTFILE).tar.gz reedda@login.ccs.neu.edu:/home/reedda/cs3700/raft
 
-publish: vendor build_linux bundle copy
+publish: vendor bundle copy

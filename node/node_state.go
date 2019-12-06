@@ -55,7 +55,7 @@ func (n *Node) ResetVotes() {
 }
 
 func (n *Node) VoteForSelf() {
-	n.State.VoteFor(n.Id)
+	n.State.SetVotedFor(n.Id)
 	n.IncrementVotes()
 }
 
@@ -64,7 +64,7 @@ func (n *Node) IncrementVotes() {
 }
 
 func (n *Node) VoteQuorum() bool {
-	return n.Votes > ((len(n.Neighbors) + 1) / 2)
+	return n.Votes > (len(n.Neighbors)+1)/2
 }
 
 // Roles

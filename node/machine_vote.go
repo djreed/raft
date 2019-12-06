@@ -4,16 +4,13 @@ import "github.com/djreed/raft/data"
 
 // TODO if we get a term > currentTerm, convert to Follower, set term to higher
 func HandleRequestVote(n *Node, vote data.RequestVote) data.MessageList {
-	responseCore := CreateResponseCore(n, data.VOTE_MSG, *vote.MessageCore)
+	responseCore := CreateResponseCore(n, data.VOTE_RES_MSG, *vote.MessageCore)
 
 	response := data.RequestVoteResponse{
 		MessageCore: responseCore,
 		TermCore:    vote.TermCore,
 		VoteGranted: false,
 	}
-
-	OUT.Printf("\n(%v) AAAAAAAAAAAAAAAAAA\n%+v\nAAAAAAAAAAAAAAAAAAAAA\n", n.Id, n.State)
-	OUT.Printf("\n(%v) OOOOOOOOOOOOOOOOOO\n%+v\nOOOOOOOOOOOOOOOOOOOOO\n", n.Id, vote)
 
 	// 1. Reply false if term < currentTerm (§5.1)
 	if vote.TermId >= n.State.CurrentTerm {
@@ -22,7 +19,7 @@ func HandleRequestVote(n *Node, vote data.RequestVote) data.MessageList {
 			// and candidate’s log is at least as up-to-date as receiver’s log...
 			if UpToDate(n, vote.LastLogIndex, vote.LastLogTerm) {
 				response.VoteGranted = true
-				n.State.VoteFor(vote.CandidateId) // grant vote (§5.2, §5.4)
+				n.State.SetVotedFor(vote.CandidateId) // grant vote (§5.2, §5.4)
 				n.ResetElectionTimeout()
 			}
 		}
@@ -35,8 +32,9 @@ func HandleRequestVote(n *Node, vote data.RequestVote) data.MessageList {
 func HandleRequestVoteResponse(n *Node, voteRes data.RequestVoteResponse) data.MessageList {
 	if voteRes.VoteGranted {
 		n.IncrementVotes()
+		OUT.Printf("(%v) Vote count -- %d", n.Id, n.Votes)
 		if n.VoteQuorum() {
-			OUT.Println("!!! I AM NOW THE LEADER, BOW BEFORE ME !!!")
+			OUT.Printf("(%v) !!! I AM NOW THE LEADER, BOW BEFORE ME !!!", n.Id)
 			n.BecomeLeader()
 		}
 	}
