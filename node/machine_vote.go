@@ -33,10 +33,10 @@ func HandleRequestVoteResponse(n *Node, voteRes data.RequestVoteResponse) data.M
 	if voteRes.VoteGranted {
 		n.IncrementVotes()
 		if n.VoteQuorum() {
-			OUT.Printf("(%v) !!! I AM NOW THE LEADER, BOW BEFORE ME !!!", n.Id)
+			ERR.Printf("(%v) !!! I AM NOW THE LEADER, BOW BEFORE ME !!!", n.Id)
 			n.BecomeLeader()
 		}
 	}
 
-	return MakeList(nil)
+	return nil
 }

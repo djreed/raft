@@ -31,16 +31,20 @@ func (n *Node) StateMachine() error {
 			break
 
 		case <-n.ElectionTimeout:
-			OUT.Printf("(%v) -- !!! ELECTION TIMEOUT !!!", n.Id)
+			ERR.Printf("(%v) -- !!! ELECTION TIMEOUT !!!", n.Id)
 			responses = HandleElectionTimeout(n)
 			break
 
 		case <-n.HeartbeatTimeout:
+			ERR.Printf("(%v) -- !!! HEARTBEAT TIMEOUT !!!", n.Id)
 			responses = HandleHeartbeatTimeout(n)
+			break
 		}
 
-		for _, response := range responses {
-			n.SendMessage(response)
+		if len(responses) > 0 {
+			for _, response := range responses {
+				n.SendMessage(response)
+			}
 		}
 	}
 }

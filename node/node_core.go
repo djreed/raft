@@ -77,7 +77,7 @@ func NewNode(id data.NODE_ID, neighbors []data.NODE_ID) Node {
 func OpenSocket(id data.NODE_ID) Socket {
 	conn, err := net.Dial("unixpacket", string(id))
 	if err != nil {
-		OUT.Panic(err)
+		ERR.Panic(err)
 	}
 
 	return conn

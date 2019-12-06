@@ -41,7 +41,7 @@ func NewElectionTimeout() <-chan time.Time {
 }
 
 func NewHeartbeatTimeout() <-chan time.Time {
-	return time.After(electBase / heartbeatScale)
+	return time.After(heartbeatBase)
 }
 
 // Votes

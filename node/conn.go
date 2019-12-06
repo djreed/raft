@@ -14,7 +14,7 @@ func JSONStreams(c io.ReadWriter) (*json.Encoder, *json.Decoder) {
 }
 
 func (n *Node) HandleConn() {
-	OUT.Printf("(%s) Listening to Socket: %s\n", n.Id, n.Socket.RemoteAddr())
+	ERR.Printf("(%s) Listening to Socket: %s\n", n.Id, n.Socket.RemoteAddr())
 
 	// Read from Connection
 	_, decoder := JSONStreams(n.Socket)
@@ -24,13 +24,14 @@ func (n *Node) HandleConn() {
 		decoder.Decode(&baseMsg)
 
 		byteData, _ := json.Marshal(baseMsg)
-		OUT.Printf("(RECEIVED %s) -- %s\n", n.Id, string(byteData))
+		// ERR.Printf("(RECEIVED %s) -- %s\n", n.Id, string(byteData))
+
+		messageType := data.MSG_TYPE(baseMsg["type"].(string))
 
 		// Decode JSON into correct message type
 		// Send along corresponding channel
-
 		var decodeErr error
-		switch data.MSG_TYPE(baseMsg["type"].(string)) {
+		switch messageType {
 		case data.GET_MSG:
 			var getMsg data.GetMessage
 			decodeErr = json.Unmarshal(byteData, &getMsg)
@@ -68,11 +69,11 @@ func (n *Node) HandleConn() {
 			break
 
 		default:
-			OUT.Panicf("(!!! %s !!!) Unknown message type: %s\n", n.Id, baseMsg["type"])
+			ERR.Panicf("(!!! %s !!!) Unknown message type: %s\n", n.Id, baseMsg["type"])
 		}
 
 		if decodeErr != nil {
-			OUT.Panicf("(!!! %s !!!) %s\n", n.Id, decodeErr)
+			ERR.Panicf("(!!! %s !!!) %s\n", n.Id, decodeErr)
 		}
 	}
 }
@@ -82,9 +83,9 @@ func (n *Node) SendMessage(msg interface{}) {
 	encoder, _ := JSONStreams(n.Socket)
 	err := encoder.Encode(msg)
 	if err != nil {
-		OUT.Panicf("(!!! %s !!!) -- %s\n", n.Id, err)
+		ERR.Panicf("(!!! %s !!!) -- %s\n", n.Id, err)
 	} else {
-		byteData, _ := json.Marshal(msg)
-		OUT.Printf("(SENDING %s) -- %s", n.Id, string(byteData))
+		// byteData, _ := json.Marshal(msg)
+		// ERR.Printf("(SENDING %s) -- %s", n.Id, string(byteData))
 	}
 }

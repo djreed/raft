@@ -10,7 +10,7 @@ func HandlePut(n *Node, put data.PutMessage) data.MessageList {
 		return MakeList(core)
 	} else {
 		// Redirect
-		// core := n.NewMessageCoreId(put.Source, data.REDIRECT_MSG, put.MessageId)
-		return MakeList()
+		core := n.NewMessageCoreId(put.Source, data.REDIRECT_MSG, put.MessageId)
+		return MakeList(core)
 	}
 }

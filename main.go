@@ -4,15 +4,12 @@ import (
 	"os"
 
 	"github.com/djreed/raft/data"
-	"github.com/djreed/raft/logging"
 	"github.com/djreed/raft/node"
 )
 
-var OUT = logging.OUT
-
 func main() {
 	if len(os.Args) < 3 {
-		OUT.Panic("Must specify Node ID and at least one Neighbor")
+		panic("Must specify Node ID and at least one Neighbor")
 	}
 	// Get args as IPs and relations
 	nodeId := data.NODE_ID(os.Args[1])
