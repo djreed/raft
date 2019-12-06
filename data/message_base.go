@@ -1,6 +1,9 @@
 package data
 
-import "github.com/google/uuid"
+import (
+	"crypto/rand"
+	"encoding/base64"
+)
 
 /*
   All Messages contain AT LEAST:
@@ -29,6 +32,36 @@ type MSG_TYPE string
 
 type MessageList = []interface{}
 
+const MID_LEN = 8
+
 func NewMessageId() MESSAGE_ID {
-	return MESSAGE_ID(uuid.New().String())
+	str, _ := GenerateRandomString(MID_LEN)
+	return MESSAGE_ID(str)
+}
+
+// Source: https://flaviocopes.com/go-random/
+
+// GenerateRandomBytes returns securely generated random bytes.
+// It will return an error if the system's secure random
+// number generator fails to function correctly, in which
+// case the caller should not continue.
+func GenerateRandomBytes(n int) ([]byte, error) {
+	b := make([]byte, n)
+	_, err := rand.Read(b)
+	// Note that err == nil only if we read len(b) bytes.
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
+}
+
+// GenerateRandomString returns a URL-safe, base64 encoded
+// securely generated random string.
+// It will return an error if the system's secure random
+// number generator fails to function correctly, in which
+// case the caller should not continue.
+func GenerateRandomString(s int) (string, error) {
+	b, err := GenerateRandomBytes(s)
+	return base64.URLEncoding.EncodeToString(b), err
 }

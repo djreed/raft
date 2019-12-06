@@ -42,24 +42,24 @@ type RaftState struct {
 	// commitIndex index of highest log entry known to be
 	// committed (initialized to 0, increases
 	// monotonically)
-	CommitIndex int
+	CommitIndex ENTRY_INDEX
 
 	// lastApplied index of highest log entry applied to state
 	// machine (initialized to 0, increases
 	// monotonically)
-	LastApplied int
+	LastApplied ENTRY_INDEX
 
 	// nextIndex[] for each server, index of the next log entry
 	// to send to that server (initialized to leader
 	// last log index + 1)
 	// NOTE -- Reinitialized after election
-	NextIndex []int // LEADER ONLY STATE
+	NextIndex []ENTRY_INDEX // LEADER ONLY STATE
 
 	// matchIndex[] for each server, index of highest log entry
 	// known to be replicated on server
 	// (initialized to 0, increases monotonically
 	// NOTE -- Reinitialized after election
-	MatchIndex []int // LEADER ONLY STATE
+	MatchIndex []ENTRY_INDEX // LEADER ONLY STATE
 }
 
 func NewRaftState(neighborCount int) RaftState {
@@ -69,8 +69,8 @@ func NewRaftState(neighborCount int) RaftState {
 		Log:         make([]LogEntry, 1), // Index starts at `1`
 		CommitIndex: 0,
 		LastApplied: 0,
-		NextIndex:   make([]int, neighborCount, neighborCount), // Re-initialized on leader election
-		MatchIndex:  make([]int, neighborCount, neighborCount), // Re-initialized on leader election
+		NextIndex:   make([]ENTRY_INDEX, neighborCount, neighborCount), // Re-initialized on leader election
+		MatchIndex:  make([]ENTRY_INDEX, neighborCount, neighborCount), // Re-initialized on leader election
 	}
 	return initialState
 }

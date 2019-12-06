@@ -88,12 +88,16 @@ func (n *Node) StartNode() error {
 }
 
 func (n *Node) NewMessageCore(dest data.NODE_ID, msgType data.MSG_TYPE) *data.MessageCore {
+	return n.NewMessageCoreId(dest, msgType, data.NewMessageId())
+}
+
+func (n *Node) NewMessageCoreId(dest data.NODE_ID, msgType data.MSG_TYPE, mid data.MESSAGE_ID) *data.MessageCore {
 	return &data.MessageCore{
 		Source:    n.Id,
 		Dest:      dest,
 		Leader:    n.Leader,
 		Type:      msgType,
-		MessageId: data.NewMessageId(),
+		MessageId: mid,
 	}
 }
 
@@ -109,8 +113,4 @@ func (n *Node) Get(key data.KEY_TYPE) data.VAL_TYPE {
 
 func (n *Node) Set(key data.KEY_TYPE, val data.VAL_TYPE) {
 	n.Data[key] = val
-}
-
-func (n *Node) IsLeader() bool {
-	return n.Id == n.Leader
 }

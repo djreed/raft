@@ -4,9 +4,15 @@ import "github.com/djreed/raft/data"
 
 func (n *Node) StateMachine() error {
 	for {
-		var shouldRespond bool
 		var responses []interface{}
 		select {
+		case <-n.ElectionTimeout:
+			ERR.Println("!!! ELECTION TIMEOUT !!!")
+			responses = HandleElectionTimeout(n)
+			break
+
+			// case <-n.HeartbeatTimeout: // TODO
+
 		case rv := <-n.RequestVotes:
 			responses = HandleRequestVote(n, rv)
 			break
@@ -31,18 +37,10 @@ func (n *Node) StateMachine() error {
 			responses = HandlePut(n, put)
 			break
 
-		case <-n.ElectionTimeout:
-			responses = HandleElectionTimeout(n)
-			break
-
-			// case <-n.HeartbeatTimeout: // TODO
-
 		}
 
-		if shouldRespond {
-			for _, response := range responses {
-				n.SendMessage(response)
-			}
+		for _, response := range responses {
+			n.SendMessage(response)
 		}
 	}
 }
@@ -51,7 +49,7 @@ func CreateResponseCore(n *Node, msgType data.MSG_TYPE, msg data.MessageCore) *d
 	return &data.MessageCore{
 		Source:    n.Id,
 		Dest:      msg.Source,
-		Leader:    n.Id, // n.Leader, // TODO TODO TODO
+		Leader:    n.Leader,
 		Type:      msgType,
 		MessageId: msg.MessageId,
 	}
@@ -63,6 +61,5 @@ func UpToDate(n *Node, lastLogIndex data.ENTRY_INDEX, lastLogTerm data.TERM_ID) 
 }
 
 func MakeList(data ...interface{}) []interface{} {
-	vals := make([]interface{}, 0)
-	return append(vals, data)
+	return data
 }
