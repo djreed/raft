@@ -4,8 +4,7 @@ type ENTRY_TYPE string
 
 const (
 	// Append Types
-	PROMISE = ENTRY_TYPE("promise")
-	COMMIT  = ENTRY_TYPE("commit")
+	PUT = ENTRY_TYPE("put")
 )
 
 type NODE_STATE int
@@ -17,11 +16,13 @@ const (
 )
 
 type LogEntry struct {
-	// EntryId ENTRY_INDEX `json:"id"`
 	Key   KEY_TYPE   `json:"key"`
 	Value VAL_TYPE   `json:"val"`
 	Type  ENTRY_TYPE `json:"type"`
-	Term  TERM_ID    `json:"term"` // Ignore in JSON
+	Term  TERM_ID    `json:"term"`
+
+	Sender NODE_ID    `json:"senderId"`
+	MID    MESSAGE_ID `json:"MID"`
 }
 
 // RaftState is the state used for Consensus and log replication
@@ -36,8 +37,11 @@ type RaftState struct {
 
 	// log[] log entries; each entry contains command
 	// for state machine, and term when entry
-	// was received by leader (first index is 1)
+	// was received by leader (first index is 1) (TODO validate indices checking)
 	Log []LogEntry
+
+	// The actual key<>value store, built from the Log above
+	Data map[KEY_TYPE]VAL_TYPE
 
 	// commitIndex index of highest log entry known to be
 	// committed (initialized to 0, increases
@@ -67,6 +71,7 @@ func NewRaftState(neighborCount int) RaftState {
 		CurrentTerm: 0,
 		VotedFor:    "",                  // Stand-in for `null`
 		Log:         make([]LogEntry, 1), // Index starts at `1`
+		Data:        make(map[KEY_TYPE]VAL_TYPE),
 		CommitIndex: 0,
 		LastApplied: 0,
 		NextIndex:   make([]ENTRY_INDEX, neighborCount, neighborCount), // Re-initialized on leader election
@@ -85,6 +90,10 @@ func (s *RaftState) SetVotedFor(candidate NODE_ID) {
 
 func (s *RaftState) IncrementTerm() {
 	s.CurrentTerm++
+}
+
+func (s *RaftState) SetTerm(term TERM_ID) {
+	s.CurrentTerm = term
 }
 
 // Log Indices
@@ -119,8 +128,37 @@ func (s *RaftState) LastLogTerm() TERM_ID {
 
 // Log values
 
+func (s *RaftState) GetLogEntry(idx ENTRY_INDEX) (entry LogEntry, found bool) {
+	if 0 < idx && int(idx) < len(s.Log) {
+		entry = s.Log[idx]
+		found = true
+	}
+	return
+}
+
 func (s *RaftState) AppendLog(entries ...LogEntry) {
 	s.Log = append(s.Log, entries...)
+}
+
+func (s *RaftState) CommitAll() {
+	// TODO validate initial index assignment
+	s.CommitTo(ENTRY_INDEX(len(s.Log) - 1))
+}
+
+func (s *RaftState) CommitTo(commitTo ENTRY_INDEX) {
+	start := s.LastApplied
+	for idx := start + 1; /* TODO validate the `+1` here */ idx <= commitTo; idx++ {
+		s.ApplyEntry(s.Log[idx])
+		s.LastApplied = ENTRY_INDEX(idx)
+	}
+}
+
+func (s *RaftState) ApplyEntry(entry LogEntry) {
+	s.Data[entry.Key] = entry.Value
+}
+
+func (s *RaftState) Get(key KEY_TYPE) VAL_TYPE {
+	return s.Data[key]
 }
 
 // Neighbor index tracking

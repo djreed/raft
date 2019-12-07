@@ -2,8 +2,9 @@ package node
 
 import "github.com/djreed/raft/data"
 
-func (n *Node) StateMachine() error {
+func (n *Node) StateMachineSteady() error {
 	for {
+		var stateChange bool
 		var responses []interface{}
 		select {
 		case rvr := <-n.RequestVoteResponses:
@@ -11,7 +12,7 @@ func (n *Node) StateMachine() error {
 			break
 
 		case aer := <-n.AppendEntryResponses:
-			responses = HandleAppendEntriesResponse(n, aer)
+			responses, _ = HandleAppendEntriesResponse(n, aer, false)
 			break
 
 		case rv := <-n.RequestVotes:
@@ -36,8 +37,8 @@ func (n *Node) StateMachine() error {
 			break
 
 		case <-n.HeartbeatTimeout:
-			ERR.Printf("(%v) -- !!! HEARTBEAT TIMEOUT !!!", n.Id)
-			responses = HandleHeartbeatTimeout(n)
+			ERR.Printf("(%v) -- !!! HEARTBEAT TIMEOUT FROM STEADY !!!", n.Id)
+			responses, stateChange = HandleHeartbeatTimeout(n)
 			break
 		}
 
@@ -45,6 +46,63 @@ func (n *Node) StateMachine() error {
 			for _, response := range responses {
 				n.SendMessage(response)
 			}
+		}
+
+		if stateChange {
+			n.BeginCommit()
+			n.StateMachineCommit()
+			stateChange = false
+		}
+	}
+}
+
+func (n *Node) StateMachineCommit() error {
+	for {
+		stateChange := false
+		var responses []interface{}
+		select {
+		case rvr := <-n.RequestVoteResponses:
+			responses = HandleRequestVoteResponse(n, rvr)
+			stateChange = true // On election, drop back down to Steady
+			break
+
+		case aer := <-n.AppendEntryResponses:
+			responses, stateChange = HandleAppendEntriesResponse(n, aer, true)
+			break
+
+		case rv := <-n.RequestVotes:
+			responses = HandleRequestVote(n, rv)
+			stateChange = true // On election, drop back down to steady
+			break
+
+		case ae := <-n.AppendEntries:
+			responses = HandleAppendEntries(n, ae)
+			break
+
+		case get := <-n.GetMessages:
+			responses = HandleGet(n, get)
+			break
+
+		case <-n.ElectionTimeout:
+			ERR.Printf("(%v) -- !!! ELECTION TIMEOUT !!!", n.Id)
+			responses = HandleElectionTimeout(n)
+			break
+
+		case <-n.HeartbeatTimeout:
+			ERR.Printf("(%v) -- !!! HEARTBEAT TIMEOUT FROM COMMIT !!!", n.Id)
+			responses, _ = HandleHeartbeatTimeout(n)
+			break
+		}
+
+		if len(responses) > 0 {
+			for _, response := range responses {
+				n.SendMessage(response)
+			}
+		}
+
+		if stateChange {
+			n.EndCommit()
+			return nil
 		}
 	}
 }
@@ -57,11 +115,6 @@ func CreateResponseCore(n *Node, msgType data.MSG_TYPE, msg data.MessageCore) *d
 		Type:      msgType,
 		MessageId: msg.MessageId,
 	}
-}
-
-func UpToDate(n *Node, lastLogIndex data.ENTRY_INDEX, lastLogTerm data.TERM_ID) bool {
-	// TODO
-	return true
 }
 
 func MakeList(data ...interface{}) []interface{} {

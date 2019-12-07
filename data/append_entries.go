@@ -1,6 +1,6 @@
 package data
 
-type ENTRY_INDEX uint32
+type ENTRY_INDEX int32
 
 type AppendEntries struct {
 	*MessageCore

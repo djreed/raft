@@ -29,11 +29,13 @@ type Node struct {
 	// Single UNIX domain socket, emulating Ethernet
 	Socket Socket
 
-	Data  map[data.KEY_TYPE]data.VAL_TYPE
+	// Keystore and Consensus data
 	State data.RaftState
 
 	// Quorum Tracking
-	Votes int // How many neighbors have voted for me
+	Votes           int                   // How many neighbors have voted for me
+	Replications    int                   // How many neighbors have replicated my log
+	ReplicatedNodes map[data.NODE_ID]bool // Which nodes have replicated my log
 
 	// A Channel for each data type we need to handle
 	RequestVotes         chan data.RequestVote
@@ -61,8 +63,8 @@ func NewNode(id data.NODE_ID, neighbors []data.NODE_ID) Node {
 		Id:                   id,
 		Neighbors:            neighbors,
 		Socket:               unixSock,
-		Data:                 make(map[data.KEY_TYPE]data.VAL_TYPE),
 		State:                initialRaftState,
+		ReplicatedNodes:      make(map[data.NODE_ID]bool),
 		RequestVotes:         make(chan data.RequestVote, CHAN_BUFFER),
 		AppendEntries:        make(chan data.AppendEntries, CHAN_BUFFER),
 		RequestVoteResponses: make(chan data.RequestVoteResponse, CHAN_BUFFER),
@@ -86,7 +88,7 @@ func OpenSocket(id data.NODE_ID) Socket {
 func (n *Node) StartNode() error {
 	go n.HandleConn()
 	n.BecomeFollower(data.UNKNOWN_LEADER)
-	return n.StateMachine()
+	return n.StateMachineSteady()
 }
 
 func (n *Node) NewMessageCore(dest data.NODE_ID, msgType data.MSG_TYPE) *data.MessageCore {
@@ -107,12 +109,4 @@ func (n *Node) NewTermCore() *data.TermCore {
 	return &data.TermCore{
 		TermId: n.State.CurrentTerm,
 	}
-}
-
-func (n *Node) Get(key data.KEY_TYPE) data.VAL_TYPE {
-	return n.Data[key]
-}
-
-func (n *Node) Set(key data.KEY_TYPE, val data.VAL_TYPE) {
-	n.Data[key] = val
 }

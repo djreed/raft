@@ -2,7 +2,9 @@ package node
 
 import "github.com/djreed/raft/data"
 
-func HandleHeartbeatTimeout(n *Node) data.MessageList {
+func HandleHeartbeatTimeout(n *Node) (data.MessageList, bool) {
+	pendingCommit := n.PendingCommits()
+
 	messages := make(data.MessageList, 0)
 	for _, nodeId := range n.Neighbors {
 		msgCore := n.NewMessageCore(nodeId, data.APPEND_MSG)
@@ -17,6 +19,8 @@ func HandleHeartbeatTimeout(n *Node) data.MessageList {
 			// LeaderCommit: leaderCommit,
 		}
 
+		// TODO actually build the entry messages
+
 		// toSendIdx := n.State.IndexToSend(idx) // Index of new entries
 		// replicatedIdx := n.State.IndexReplicated(idx) // TODO Why?
 
@@ -29,5 +33,5 @@ func HandleHeartbeatTimeout(n *Node) data.MessageList {
 	}
 
 	n.ResetHeartbeatTimeout()
-	return messages
+	return messages, pendingCommit
 }
