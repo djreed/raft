@@ -40,13 +40,6 @@ func HandleAppendEntries(n *Node, appendEntries data.AppendEntries) data.Message
 	return MakeList(response)
 }
 
-func Min(x, y int) int {
-	if x > y {
-		return y
-	}
-	return x
-}
-
 func HandleAppendEntriesResponse(n *Node, appendRes data.AppendEntriesResponse, isCommitting bool) (messageList data.MessageList, stateChange bool) {
 	// TODO Handle term mismatch
 	if n.HandleTermUpdate(appendRes.TermId, appendRes.Leader) {

@@ -2,6 +2,8 @@ package node
 
 import "github.com/djreed/raft/data"
 
+const BATCH_SIZE = 10
+
 func HandleHeartbeatTimeout(n *Node) (data.MessageList, bool) {
 	messages := make(data.MessageList, 0)
 
@@ -33,14 +35,14 @@ func HandleHeartbeatTimeout(n *Node) (data.MessageList, bool) {
 		// Are we sending data that's within our logs?
 		dataToSend := sendStartIdx <= n.State.LastLogIndex()
 		if dataToSend {
-			entriesToSend := n.State.Log[sendStartIdx-1:] // TODO batching
-			request.Entries = entriesToSend
+			toSendCount := Min(BATCH_SIZE, len(n.State.Log[sendStartIdx-1:]))
 
-			messagesSent := len(entriesToSend)
+			request.Entries = n.State.Log[sendStartIdx-1 : (sendStartIdx-1)+data.ENTRY_INDEX(toSendCount)]
+			messagesSent := len(request.Entries)
 
 			// Is non-committed data being sent
 			lastIndexSent := int(sendStartIdx) + messagesSent - 1 // TODO validate minus 1
-			if lastIndexSent > int(n.State.CommitIndex) {         // TODO batching
+			if lastIndexSent > int(n.State.CommitIndex) {
 				n.AddReplicationMid(request.MessageId)
 			}
 		}

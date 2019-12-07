@@ -21,7 +21,9 @@ func (n *Node) HandleConn() {
 
 	for {
 		var baseMsg data.UnknownMessage
-		decoder.Decode(&baseMsg)
+		if decoder.Decode(&baseMsg) != nil || baseMsg == nil {
+			continue
+		}
 
 		byteData, _ := json.Marshal(baseMsg)
 		// ERR.Printf("(RECEIVED %s) -- %s\n", n.Id, string(byteData))
