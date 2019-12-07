@@ -3,8 +3,6 @@ package node
 import "github.com/djreed/raft/data"
 
 func HandleHeartbeatTimeout(n *Node) (data.MessageList, bool) {
-	pendingCommit := n.PendingCommits()
-
 	messages := make(data.MessageList, 0)
 	for idx, nodeId := range n.Neighbors {
 		msgCore := n.NewMessageCore(nodeId, data.APPEND_MSG)
@@ -14,12 +12,11 @@ func HandleHeartbeatTimeout(n *Node) (data.MessageList, bool) {
 		// replicatedIdx := n.State.IndexReplicated(idx) // TODO Why?
 
 		prevLogIdx := toSendIdx - 1 // Preceding
-		entry, present := n.State.GetLogEntry(prevLogIdx)
-		prevLogTerm := n.State.CurrentTerm
+		prevLogEntry, present := n.State.GetLogEntry(prevLogIdx)
+		prevLogTerm := data.TERM_ID(0)
 		if present {
-			prevLogTerm = entry.Term
+			prevLogTerm = prevLogEntry.Term
 		}
-		leaderCommit := n.State.CommitIndex
 
 		request := data.AppendEntries{
 			MessageCore:  msgCore,
@@ -27,11 +24,16 @@ func HandleHeartbeatTimeout(n *Node) (data.MessageList, bool) {
 			Entries:      make([]data.LogEntry, 0),
 			PrevLogIndex: prevLogIdx,
 			PrevLogTerm:  prevLogTerm,
-			LeaderCommit: leaderCommit,
+			LeaderCommit: n.State.CommitIndex,
 		}
 
-		if 0 <= toSendIdx && toSendIdx <= n.State.LastLogIndex() {
-			entriesToSend := []data.LogEntry{n.State.Log[toSendIdx]} // TODO batching
+		// Is data being sent
+		if 0 < toSendIdx && toSendIdx <= n.State.LastLogIndex() {
+			// Is non-committed data being sent
+			if toSendIdx > n.State.CommitIndex {
+				n.AddReplicationMid(request.MessageId)
+			}
+			entriesToSend := []data.LogEntry{n.State.Log[toSendIdx-1]} // TODO batching
 			request.Entries = entriesToSend
 		}
 
@@ -39,5 +41,5 @@ func HandleHeartbeatTimeout(n *Node) (data.MessageList, bool) {
 	}
 
 	n.ResetHeartbeatTimeout()
-	return messages, pendingCommit
+	return messages, n.PendingCommits()
 }

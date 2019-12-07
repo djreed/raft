@@ -92,8 +92,9 @@ func (n *Node) VoteQuorum() bool {
 // Commit promises
 
 func (n *Node) ResetReplications() {
-	n.Replications = 0
+	n.Replications = 1
 	n.ReplicatedNodes = make(map[data.NODE_ID]bool)
+	n.ReplicationMessages = make(map[data.MESSAGE_ID]bool)
 }
 
 func (n *Node) IncrementReplications() {
@@ -110,6 +111,15 @@ func (n *Node) AlreadyReplicated(nid data.NODE_ID) bool {
 
 func (n *Node) SetReplicated(nid data.NODE_ID) {
 	n.ReplicatedNodes[nid] = true
+}
+
+func (n *Node) AddReplicationMid(mid data.MESSAGE_ID) {
+	n.ReplicationMessages[mid] = true
+}
+
+func (n *Node) IsReplicationMessage(mid data.MESSAGE_ID) bool {
+	isReplicationMessage, present := n.ReplicationMessages[mid]
+	return isReplicationMessage && present
 }
 
 // Roles
@@ -146,7 +156,7 @@ func (n *Node) TargetUpToDate(lastLogIndex data.ENTRY_INDEX, lastLogTerm data.TE
 }
 
 func (n *Node) PendingCommits() bool {
-	return n.State.LastApplied < n.State.CommitIndex
+	return n.State.CommitIndex > n.State.LastApplied
 }
 
 // Timeout Resets

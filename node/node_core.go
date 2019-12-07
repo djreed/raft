@@ -33,9 +33,10 @@ type Node struct {
 	State data.RaftState
 
 	// Quorum Tracking
-	Votes           int                   // How many neighbors have voted for me
-	Replications    int                   // How many neighbors have replicated my log
-	ReplicatedNodes map[data.NODE_ID]bool // Which nodes have replicated my log
+	Votes               int                      // How many neighbors have voted for me
+	Replications        int                      // How many neighbors have replicated my log
+	ReplicatedNodes     map[data.NODE_ID]bool    // Which nodes have replicated my log
+	ReplicationMessages map[data.MESSAGE_ID]bool // Which messages are valid replications
 
 	// A Channel for each data type we need to handle
 	RequestVotes         chan data.RequestVote
@@ -64,7 +65,9 @@ func NewNode(id data.NODE_ID, neighbors []data.NODE_ID) Node {
 		Neighbors:            neighbors,
 		Socket:               unixSock,
 		State:                initialRaftState,
+		Replications:         1, // Always replicated with self
 		ReplicatedNodes:      make(map[data.NODE_ID]bool),
+		ReplicationMessages:  make(map[data.MESSAGE_ID]bool),
 		RequestVotes:         make(chan data.RequestVote, CHAN_BUFFER),
 		AppendEntries:        make(chan data.AppendEntries, CHAN_BUFFER),
 		RequestVoteResponses: make(chan data.RequestVoteResponse, CHAN_BUFFER),

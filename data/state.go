@@ -69,11 +69,11 @@ type RaftState struct {
 func NewRaftState(neighborCount int) RaftState {
 	initialState := RaftState{
 		CurrentTerm: 0,
-		VotedFor:    "",                  // Stand-in for `null`
-		Log:         make([]LogEntry, 0), // Index starts at NOT 1, ITS 0, EAT SHIT AND DIE
+		VotedFor:    "", // Stand-in for `null`
+		Log:         make([]LogEntry, 0),
 		Data:        make(map[KEY_TYPE]VAL_TYPE),
-		CommitIndex: -1,                                                // TODO Should be initialized to 0 if 1-indexed
-		LastApplied: -1,                                                // TODO should be initialized to 0 if 1-indexed
+		CommitIndex: 0,
+		LastApplied: 0,
 		NextIndex:   make([]ENTRY_INDEX, neighborCount, neighborCount), // Re-initialized on leader election
 		MatchIndex:  make([]ENTRY_INDEX, neighborCount, neighborCount), // Re-initialized on leader election
 	}
@@ -104,28 +104,28 @@ func (s *RaftState) ResetLeaderIndices() {
 	}
 
 	for idx, _ := range s.MatchIndex {
-		s.MatchIndex[idx] = -1 // TODO would be 0 if we're 1-indexed
+		s.MatchIndex[idx] = 0
 	}
 }
 
 func (s *RaftState) LastLogIndex() ENTRY_INDEX {
-	return ENTRY_INDEX(len(s.Log) - 1)
+	return ENTRY_INDEX(len(s.Log))
 }
 
 func (s *RaftState) LastLogTerm() TERM_ID {
 	idx := s.LastLogIndex()
-	if idx >= 0 {
-		return s.Log[idx].Term
+	if idx > 0 {
+		return s.Log[idx-1].Term
 	} else {
-		return s.CurrentTerm // TODO: Validate correct default
+		return 0 // TODO: Validate correct default
 	}
 }
 
 // Log values
 
 func (s *RaftState) GetLogEntry(idx ENTRY_INDEX) (entry LogEntry, found bool) {
-	if 0 < idx && int(idx) < len(s.Log) {
-		entry = s.Log[idx]
+	if 0 < idx && int(idx) <= len(s.Log) {
+		entry = s.Log[idx-1]
 		found = true
 	}
 	return
@@ -136,15 +136,15 @@ func (s *RaftState) AppendLog(entries ...LogEntry) {
 }
 
 func (s *RaftState) CommitAll() {
-	// TODO validate initial index assignment
-	s.CommitTo(ENTRY_INDEX(len(s.Log) - 1))
+	lastIndex := s.LastLogIndex()
+	s.CommitTo(lastIndex)
+	s.CommitIndex = lastIndex
 }
 
 func (s *RaftState) CommitTo(commitTo ENTRY_INDEX) {
-	start := s.LastApplied
-	for idx := start + 1; /* TODO validate the `+1` here */ idx <= commitTo; idx++ {
-		s.ApplyEntry(s.Log[idx])
+	for idx := s.LastApplied + 1; /* TODO validate the `+1` here */ idx <= commitTo; idx++ {
 		s.LastApplied = ENTRY_INDEX(idx)
+		s.ApplyEntry(s.Log[idx-1])
 	}
 }
 

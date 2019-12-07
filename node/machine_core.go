@@ -3,8 +3,8 @@ package node
 import "github.com/djreed/raft/data"
 
 func (n *Node) StateMachineSteady() error {
+	stateChange := false
 	for {
-		var stateChange bool
 		var responses []interface{}
 		select {
 		case rvr := <-n.RequestVoteResponses:
@@ -29,6 +29,9 @@ func (n *Node) StateMachineSteady() error {
 
 		case put := <-n.PutMessages:
 			responses = HandlePut(n, put)
+			if n.IsLeader() {
+				stateChange = true
+			}
 			break
 
 		case <-n.ElectionTimeout:
@@ -37,8 +40,8 @@ func (n *Node) StateMachineSteady() error {
 			break
 
 		case <-n.HeartbeatTimeout:
-			ERR.Printf("(%v) -- !!! HEARTBEAT TIMEOUT FROM STEADY !!!", n.Id)
-			responses, stateChange = HandleHeartbeatTimeout(n)
+			ERR.Printf("(%v) -- HEARTBEAT TIMEOUT FROM !!! STEADY !!!", n.Id)
+			responses, _ = HandleHeartbeatTimeout(n)
 			break
 		}
 
@@ -49,17 +52,18 @@ func (n *Node) StateMachineSteady() error {
 		}
 
 		if stateChange {
-			ERR.Printf("(!!! %v !!!) STATE CHANGE COMMIT -> STEADY", n.Id)
+			ERR.Printf("(!!! %v !!!) STATE CHANGE STEADY -> COMMIT", n.Id)
 			n.BeginCommit()
 			n.StateMachineCommit()
 			stateChange = false
+			ERR.Printf("(!!! %v !!!) BACK IN STEADY", n.Id)
 		}
 	}
 }
 
-func (n *Node) StateMachineCommit() error {
+func (n *Node) StateMachineCommit() {
+	stateChange := false
 	for {
-		stateChange := false
 		var responses []interface{}
 		select {
 		case rvr := <-n.RequestVoteResponses:
@@ -90,8 +94,8 @@ func (n *Node) StateMachineCommit() error {
 			break
 
 		case <-n.HeartbeatTimeout:
-			ERR.Printf("(%v) -- !!! HEARTBEAT TIMEOUT FROM COMMIT !!!", n.Id)
-			responses, _ = HandleHeartbeatTimeout(n)
+			ERR.Printf("(%v) -- HEARTBEAT TIMEOUT FROM !!! COMMIT !!!", n.Id)
+			responses, _ = HandleHeartbeatTimeout(n) // TODO handle batching
 			break
 		}
 
@@ -104,7 +108,7 @@ func (n *Node) StateMachineCommit() error {
 		if stateChange {
 			ERR.Printf("(!!! %v !!!) STATE CHANGE COMMIT -> STEADY", n.Id)
 			n.EndCommit()
-			return nil
+			return
 		}
 	}
 }
