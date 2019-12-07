@@ -185,3 +185,16 @@ func (n *Node) NeighborIndex(id data.NODE_ID) int {
 	}
 	return -69
 }
+
+func (n *Node) LastReplicatedIdx(nid data.NODE_ID) data.ENTRY_INDEX {
+	// Which index is known to be replicated
+	nodeIdx := n.NeighborIndex(nid)
+	return n.State.IndexReplicated(nodeIdx)
+}
+
+func (n *Node) SendStartIdx(nid data.NODE_ID) data.ENTRY_INDEX {
+	// Which index did we start sending at
+	nodeIdx := n.NeighborIndex(nid)
+	return n.State.IndexToSend(nodeIdx)
+
+}

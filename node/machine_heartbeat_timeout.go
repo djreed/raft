@@ -4,14 +4,13 @@ import "github.com/djreed/raft/data"
 
 func HandleHeartbeatTimeout(n *Node) (data.MessageList, bool) {
 	messages := make(data.MessageList, 0)
-	for idx, nodeId := range n.Neighbors {
+	for _, nodeId := range n.Neighbors {
 		msgCore := n.NewMessageCore(nodeId, data.APPEND_MSG)
 		termCore := n.NewTermCore()
 
-		toSendIdx := n.State.IndexToSend(idx) // Index of new entries
-		// replicatedIdx := n.State.IndexReplicated(idx) // TODO Why?
+		sendStartIdx := n.SendStartIdx(nodeId) // Starting index of logs being sent
 
-		prevLogIdx := toSendIdx - 1 // Preceding
+		prevLogIdx := sendStartIdx - 1 // Preceding index to logs being sent
 		prevLogEntry, present := n.State.GetLogEntry(prevLogIdx)
 		prevLogTerm := data.TERM_ID(0)
 		if present {
@@ -28,12 +27,13 @@ func HandleHeartbeatTimeout(n *Node) (data.MessageList, bool) {
 		}
 
 		// Is data being sent
-		if 0 < toSendIdx && toSendIdx <= n.State.LastLogIndex() {
+		messagesSent := n.State.LastLogIndex() - sendStartIdx
+		if messagesSent > 0 {
 			// Is non-committed data being sent
-			if toSendIdx > n.State.CommitIndex {
+			if sendStartIdx+messagesSent-1 /* TODO validate minus 1 */ > n.State.CommitIndex { // TODO batching
 				n.AddReplicationMid(request.MessageId)
 			}
-			entriesToSend := []data.LogEntry{n.State.Log[toSendIdx-1]} // TODO batching
+			entriesToSend := n.State.Log[sendStartIdx:] // TODO batching
 			request.Entries = entriesToSend
 		}
 

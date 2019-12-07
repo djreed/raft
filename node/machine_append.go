@@ -62,9 +62,9 @@ func HandleAppendEntriesResponse(n *Node, appendRes data.AppendEntriesResponse, 
 		}
 
 		// TODO these are almost certainly wrong lmao
-		lastReplicatedIdx := n.State.MatchIndex[n.NeighborIndex(appendRes.Source)] // Which index is known to be replicated
-		sendStartIdx := n.State.NextIndex[n.NeighborIndex(appendRes.Source)]       // Which index did we start sending at
-		sentCount := data.ENTRY_INDEX(0)                                           // How many messages were sent
+		lastReplicatedIdx := n.LastReplicatedIdx(appendRes.Source) // Which index is known to be replicated
+		sendStartIdx := n.SendStartIdx(appendRes.Source)           // Which index did we start sending at
+		sentCount := data.ENTRY_INDEX(0)                           // How many messages were sent
 		if n.State.LastLogIndex() > lastReplicatedIdx {
 			// If there are local log entries that haven't been replicated
 			// to a given node, we've sent data in the append this response is for
@@ -95,23 +95,4 @@ func HandleAppendEntriesResponse(n *Node, appendRes data.AppendEntriesResponse, 
 
 	stateChange = replicatedQuorum
 	return
-}
-
-func KnownReplicatedIdx(n *Node, recv data.NODE_ID) data.ENTRY_INDEX {
-	nodeIdx := n.NeighborIndex(recv)
-	lastKnownReplicatedIdx := n.State.IndexReplicated(nodeIdx)
-	if lastKnownReplicatedIdx > 0 {
-		return lastKnownReplicatedIdx + 1 // TODO changes in batched world
-	}
-	return lastKnownReplicatedIdx
-}
-
-func NextIndexToSend(n *Node, recv data.NODE_ID) data.ENTRY_INDEX {
-	nodeIdx := n.NeighborIndex(recv)
-	lastSentIdx := n.State.IndexToSend(nodeIdx)
-	if lastSentIdx > 1 {
-		ERR.Printf("(%v) Incrementing index to send to [%s] from %d -> %d\n", n.Id, recv, lastSentIdx, lastSentIdx+1)
-		return lastSentIdx + 1 // TODO changes in batched world
-	}
-	return lastSentIdx
 }
