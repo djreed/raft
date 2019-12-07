@@ -1,7 +1,7 @@
 {
-    "lifetime": 15,
+    "lifetime": 30,
     "replicas": 5,
-    "requests": 100,
+    "requests": 300,
     "mix": 0.9,
     "tests" : {
         "benchmarks" : {

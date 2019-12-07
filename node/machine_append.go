@@ -61,15 +61,17 @@ func HandleAppendEntriesResponse(n *Node, appendRes data.AppendEntriesResponse, 
 			n.IncrementReplications()
 		}
 
-		// TODO these are almost certainly wrong lmao
+		// How many entries did we send in the AppendEntries this is responding to
+		sentCount := data.ENTRY_INDEX(0)
+		originalMessage := n.AppendMessages[appendRes.MessageId]
+		// if originalMessage != nil {
+		sentCount = data.ENTRY_INDEX(len(originalMessage.Entries))
+		// }
+
+		n.DeleteAppendMessage(appendRes.MessageId)
+
 		lastReplicatedIdx := n.LastReplicatedIdx(appendRes.Source) // Which index is known to be replicated
 		sendStartIdx := n.SendStartIdx(appendRes.Source)           // Which index did we start sending at
-		sentCount := data.ENTRY_INDEX(0)                           // How many messages were sent
-		if n.State.LastLogIndex() > lastReplicatedIdx {
-			// If there are local log entries that haven't been replicated
-			// to a given node, we've sent data in the append this response is for
-			sentCount = n.State.LastLogIndex() - lastReplicatedIdx
-		}
 
 		n.State.MatchIndex[n.NeighborIndex(appendRes.Source)] = lastReplicatedIdx + sentCount
 		n.State.NextIndex[n.NeighborIndex(appendRes.Source)] = sendStartIdx + sentCount

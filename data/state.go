@@ -99,8 +99,9 @@ func (s *RaftState) SetTerm(term TERM_ID) {
 // Log Indices
 
 func (s *RaftState) ResetLeaderIndices() {
+	lastLogIdx := s.LastLogIndex()
 	for idx, _ := range s.NextIndex {
-		s.NextIndex[idx] = s.LastLogIndex() + 1 // Leader Last Log Index + 1
+		s.NextIndex[idx] = lastLogIdx + 1 // Leader Last Log Index + 1
 	}
 
 	for idx, _ := range s.MatchIndex {
@@ -159,11 +160,11 @@ func (s *RaftState) Get(key KEY_TYPE) VAL_TYPE {
 // Neighbor index tracking
 
 // Index of start of log entries to send
-func (s *RaftState) IndexToSend(neighborIdx int) ENTRY_INDEX {
-	return s.NextIndex[neighborIdx]
+func (s *RaftState) IndexToSend(nodeIdx int) ENTRY_INDEX {
+	return s.NextIndex[nodeIdx]
 }
 
 // Index of most up to date committed (replicated) log entry
-func (s *RaftState) IndexReplicated(neighborIdx int) ENTRY_INDEX {
-	return s.MatchIndex[neighborIdx]
+func (s *RaftState) IndexReplicated(nodeIdx int) ENTRY_INDEX {
+	return s.MatchIndex[nodeIdx]
 }

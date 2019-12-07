@@ -26,17 +26,25 @@ func HandleHeartbeatTimeout(n *Node) (data.MessageList, bool) {
 			LeaderCommit: n.State.CommitIndex,
 		}
 
-		// Is data being sent
-		messagesSent := n.State.LastLogIndex() - sendStartIdx
-		if messagesSent > 0 {
+		ERR.Printf("!!! (%v) !!! -- lastLogIdx(%v) | sendStart(%v) | nextIdxToSend(%+v)",
+			n.Id, n.State.LastLogIndex(), sendStartIdx, n.State.NextIndex)
+
+		// Are we sending data that's within our logs?
+		dataToSend := sendStartIdx <= n.State.LastLogIndex()
+		if dataToSend {
+			entriesToSend := n.State.Log[sendStartIdx-1:] // TODO batching
+			request.Entries = entriesToSend
+
+			messagesSent := len(entriesToSend)
+
 			// Is non-committed data being sent
-			if sendStartIdx+messagesSent-1 /* TODO validate minus 1 */ > n.State.CommitIndex { // TODO batching
+			lastIndexSent := int(sendStartIdx) + messagesSent - 1 // TODO validate minus 1
+			if lastIndexSent > int(n.State.CommitIndex) {         // TODO batching
 				n.AddReplicationMid(request.MessageId)
 			}
-			entriesToSend := n.State.Log[sendStartIdx:] // TODO batching
-			request.Entries = entriesToSend
 		}
 
+		n.RecordAppendMessage(request)
 		messages = append(messages, request)
 	}
 

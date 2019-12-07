@@ -38,6 +38,8 @@ type Node struct {
 	ReplicatedNodes     map[data.NODE_ID]bool    // Which nodes have replicated my log
 	ReplicationMessages map[data.MESSAGE_ID]bool // Which messages are valid replications
 
+	AppendMessages map[data.MESSAGE_ID]data.AppendEntries // Messages awaiting responses
+
 	// A Channel for each data type we need to handle
 	RequestVotes         chan data.RequestVote
 	AppendEntries        chan data.AppendEntries
@@ -65,6 +67,7 @@ func NewNode(id data.NODE_ID, neighbors []data.NODE_ID) Node {
 		Neighbors:            neighbors,
 		Socket:               unixSock,
 		State:                initialRaftState,
+		AppendMessages:       make(map[data.MESSAGE_ID]data.AppendEntries),
 		Replications:         1, // Always replicated with self
 		ReplicatedNodes:      make(map[data.NODE_ID]bool),
 		ReplicationMessages:  make(map[data.MESSAGE_ID]bool),

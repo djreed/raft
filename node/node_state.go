@@ -122,6 +122,14 @@ func (n *Node) IsReplicationMessage(mid data.MESSAGE_ID) bool {
 	return isReplicationMessage && present
 }
 
+func (n *Node) RecordAppendMessage(msg data.AppendEntries) {
+	n.AppendMessages[msg.MessageId] = msg
+}
+
+func (n *Node) DeleteAppendMessage(mid data.MESSAGE_ID) {
+	delete(n.AppendMessages, mid)
+}
+
 // Roles
 
 func (n *Node) SetRole(role data.NODE_STATE) {
@@ -143,6 +151,8 @@ func (n *Node) IsLeader() bool {
 func (n *Node) HandleTermUpdate(newTerm data.TERM_ID, leader data.NODE_ID) bool {
 	shouldUpdate := n.State.CurrentTerm < newTerm
 	if shouldUpdate {
+		ERR.Printf("(%v) UPDATING TERM, SOMEONE INDICATING LEADER %v : %v -> %v",
+			n.Id, leader, n.State.CurrentTerm, newTerm)
 		n.BecomeFollower(leader)
 		n.State.SetTerm(newTerm)
 	}
@@ -151,7 +161,6 @@ func (n *Node) HandleTermUpdate(newTerm data.TERM_ID, leader data.NODE_ID) bool 
 
 func (n *Node) TargetUpToDate(lastLogIndex data.ENTRY_INDEX, lastLogTerm data.TERM_ID) bool {
 	// Not possible from state machine to have same index with differing term
-	// TODO verify
 	return (lastLogIndex >= n.State.LastLogIndex()) && (lastLogTerm >= n.State.LastLogTerm())
 }
 
@@ -178,9 +187,9 @@ func (n *Node) UnsetHeartbeatTimeout() {
 }
 
 func (n *Node) NeighborIndex(id data.NODE_ID) int {
-	for idx, nid := range n.Neighbors {
+	for neighborIdx, nid := range n.Neighbors {
 		if nid == id {
-			return idx
+			return neighborIdx
 		}
 	}
 	return -69
@@ -196,5 +205,4 @@ func (n *Node) SendStartIdx(nid data.NODE_ID) data.ENTRY_INDEX {
 	// Which index did we start sending at
 	nodeIdx := n.NeighborIndex(nid)
 	return n.State.IndexToSend(nodeIdx)
-
 }
