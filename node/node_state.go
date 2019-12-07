@@ -11,7 +11,7 @@ func (n *Node) BecomeFollower(leader data.NODE_ID) {
 	n.SetRole(data.FOLLOWER)
 	n.SetLeader(leader)
 
-	n.ResetVotes()
+	n.ResetQuorum()
 
 	n.ResetElectionTimeout()
 
@@ -22,8 +22,7 @@ func (n *Node) BecomeCandidate() {
 	n.SetRole(data.CANDIDATE)
 	n.SetLeader(data.UNKNOWN_LEADER)
 
-	n.ResetVotes()
-	n.ResetReplications()
+	n.ResetQuorum()
 
 	n.State.IncrementTerm()
 	n.VoteForSelf()
@@ -37,8 +36,7 @@ func (n *Node) BecomeLeader() {
 	n.SetRole(data.LEADER)
 	n.SetLeader(n.Id)
 
-	n.ResetVotes()
-	n.ResetReplications()
+	n.ResetQuorum()
 
 	n.State.CommitAll()
 
@@ -50,13 +48,18 @@ func (n *Node) BecomeLeader() {
 }
 
 func (n *Node) BeginCommit() {
-	n.ResetVotes()
-	n.ResetReplications()
+	n.ResetQuorum()
+
 }
 
 func (n *Node) EndCommit() {
+	n.ResetQuorum()
+}
+
+func (n *Node) ResetQuorum() {
 	n.ResetVotes()
 	n.ResetReplications()
+	n.State.ResetVotedFor()
 }
 
 // Timeout reset
@@ -73,12 +76,11 @@ func NewHeartbeatTimeout() <-chan time.Time {
 // Votes
 
 func (n *Node) ResetVotes() {
-	n.Votes = 0
+	n.Votes = 1
 }
 
 func (n *Node) VoteForSelf() {
 	n.State.SetVotedFor(n.Id)
-	n.IncrementVotes()
 }
 
 func (n *Node) IncrementVotes() {
@@ -151,8 +153,6 @@ func (n *Node) IsLeader() bool {
 func (n *Node) HandleTermUpdate(newTerm data.TERM_ID, leader data.NODE_ID) bool {
 	shouldUpdate := n.State.CurrentTerm < newTerm
 	if shouldUpdate {
-		ERR.Printf("(%v) UPDATING TERM, SOMEONE INDICATING LEADER %v : %v -> %v",
-			n.Id, leader, n.State.CurrentTerm, newTerm)
 		n.BecomeFollower(leader)
 		n.State.SetTerm(newTerm)
 	}

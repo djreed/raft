@@ -168,3 +168,17 @@ func (s *RaftState) IndexToSend(nodeIdx int) ENTRY_INDEX {
 func (s *RaftState) IndexReplicated(nodeIdx int) ENTRY_INDEX {
 	return s.MatchIndex[nodeIdx]
 }
+
+// Voting
+
+func (s *RaftState) Voted() bool {
+	return s.VotedFor != ""
+}
+
+func (s *RaftState) VoteCandidate() NODE_ID {
+	return s.VotedFor
+}
+
+func (s *RaftState) ResetVotedFor() {
+  s.VotedFor = ""
+}

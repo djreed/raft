@@ -17,16 +17,16 @@ func HandleRequestVote(n *Node, vote data.RequestVote) data.MessageList {
 	// 1. Reply false if term < currentTerm (§5.1)
 	if vote.TermId >= n.State.CurrentTerm {
 		// 2. If votedFor is null or candidateId...
-		if n.State.VotedFor == "" || n.State.VotedFor == vote.CandidateId {
+		if !n.State.Voted() || n.State.VoteCandidate() == vote.CandidateId {
 			// and candidate’s log is at least as up-to-date as receiver’s log...
 			if n.TargetUpToDate(vote.LastLogIndex, vote.LastLogTerm) {
 				response.VoteGranted = true
 				n.State.SetVotedFor(vote.CandidateId) // grant vote (§5.2, §5.4)
-				n.ResetElectionTimeout()
 			}
 		}
 	}
 
+	n.ResetElectionTimeout()
 	return MakeList(response)
 }
 
@@ -37,6 +37,8 @@ func HandleRequestVoteResponse(n *Node, voteRes data.RequestVoteResponse) data.M
 	if n.HandleTermUpdate(voteRes.TermId, data.UNKNOWN_LEADER) {
 		return nil
 	}
+
+	n.ResetElectionTimeout()
 
 	if voteRes.VoteGranted {
 		n.IncrementVotes()

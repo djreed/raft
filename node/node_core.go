@@ -68,7 +68,8 @@ func NewNode(id data.NODE_ID, neighbors []data.NODE_ID) Node {
 		Socket:               unixSock,
 		State:                initialRaftState,
 		AppendMessages:       make(map[data.MESSAGE_ID]data.AppendEntries),
-		Replications:         1, // Always replicated with self
+		Votes:                1, // Always have received >= 1 vote (if Candidate)
+		Replications:         1, // Always replicated with self (if Leader)
 		ReplicatedNodes:      make(map[data.NODE_ID]bool),
 		ReplicationMessages:  make(map[data.MESSAGE_ID]bool),
 		RequestVotes:         make(chan data.RequestVote, CHAN_BUFFER),

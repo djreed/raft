@@ -4,6 +4,10 @@ import "github.com/djreed/raft/data"
 
 func HandleHeartbeatTimeout(n *Node) (data.MessageList, bool) {
 	messages := make(data.MessageList, 0)
+
+	ERR.Printf("(!!! %v !!!) -- lastLogIdx(%v) | nextIdxToSend(%+v)",
+		n.Id, n.State.LastLogIndex(), n.State.NextIndex)
+
 	for _, nodeId := range n.Neighbors {
 		msgCore := n.NewMessageCore(nodeId, data.APPEND_MSG)
 		termCore := n.NewTermCore()
@@ -25,9 +29,6 @@ func HandleHeartbeatTimeout(n *Node) (data.MessageList, bool) {
 			PrevLogTerm:  prevLogTerm,
 			LeaderCommit: n.State.CommitIndex,
 		}
-
-		ERR.Printf("!!! (%v) !!! -- lastLogIdx(%v) | sendStart(%v) | nextIdxToSend(%+v)",
-			n.Id, n.State.LastLogIndex(), sendStartIdx, n.State.NextIndex)
 
 		// Are we sending data that's within our logs?
 		dataToSend := sendStartIdx <= n.State.LastLogIndex()
