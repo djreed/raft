@@ -24,7 +24,7 @@ func (n *Node) HandleConn() {
 		decoder.Decode(&baseMsg)
 
 		byteData, _ := json.Marshal(baseMsg)
-		// ERR.Printf("(RECEIVED %s) -- %s\n", n.Id, string(byteData))
+		ERR.Printf("(RECEIVED %s) -- %s\n", n.Id, string(byteData))
 
 		messageType := data.MSG_TYPE(baseMsg["type"].(string))
 
@@ -85,7 +85,7 @@ func (n *Node) SendMessage(msg interface{}) {
 	if err != nil {
 		ERR.Panicf("(!!! %s !!!) -- %s\n", n.Id, err)
 	} else {
-		// byteData, _ := json.Marshal(msg)
-		// ERR.Printf("(SENDING %s) -- %s", n.Id, string(byteData))
+		byteData, _ := json.Marshal(msg)
+		ERR.Printf("(SENDING %s) -- %s", n.Id, string(byteData))
 	}
 }

@@ -70,10 +70,10 @@ func NewRaftState(neighborCount int) RaftState {
 	initialState := RaftState{
 		CurrentTerm: 0,
 		VotedFor:    "",                  // Stand-in for `null`
-		Log:         make([]LogEntry, 1), // Index starts at `1`
+		Log:         make([]LogEntry, 0), // Index starts at NOT 1, ITS 0, EAT SHIT AND DIE
 		Data:        make(map[KEY_TYPE]VAL_TYPE),
-		CommitIndex: 0,
-		LastApplied: 0,
+		CommitIndex: -1,                                                // TODO Should be initialized to 0 if 1-indexed
+		LastApplied: -1,                                                // TODO should be initialized to 0 if 1-indexed
 		NextIndex:   make([]ENTRY_INDEX, neighborCount, neighborCount), // Re-initialized on leader election
 		MatchIndex:  make([]ENTRY_INDEX, neighborCount, neighborCount), // Re-initialized on leader election
 	}
@@ -100,27 +100,22 @@ func (s *RaftState) SetTerm(term TERM_ID) {
 
 func (s *RaftState) ResetLeaderIndices() {
 	for idx, _ := range s.NextIndex {
-		s.NextIndex[idx] = s.LastLogIndex() // Leader Last Log Index + 1
+		s.NextIndex[idx] = s.LastLogIndex() + 1 // Leader Last Log Index + 1
 	}
 
 	for idx, _ := range s.MatchIndex {
-		s.MatchIndex[idx] = 0
+		s.MatchIndex[idx] = -1 // TODO would be 0 if we're 1-indexed
 	}
 }
 
 func (s *RaftState) LastLogIndex() ENTRY_INDEX {
-	l := len(s.Log)
-	if l > 0 {
-		return ENTRY_INDEX(l - 1)
-	} else {
-		return 0 // TODO: Validate correct default
-	}
+	return ENTRY_INDEX(len(s.Log) - 1)
 }
 
 func (s *RaftState) LastLogTerm() TERM_ID {
-	l := len(s.Log)
-	if l > 0 {
-		return s.Log[l-1].Term
+	idx := s.LastLogIndex()
+	if idx >= 0 {
+		return s.Log[idx].Term
 	} else {
 		return s.CurrentTerm // TODO: Validate correct default
 	}

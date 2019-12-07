@@ -14,7 +14,7 @@ const (
 	UNKNOWN_LEADER = NODE_ID("FFFF")
 )
 
-type TERM_ID uint32
+type TERM_ID int
 
 type TermCore struct {
 	TermId TERM_ID `json:"term"`

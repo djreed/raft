@@ -6,28 +6,34 @@ func HandleHeartbeatTimeout(n *Node) (data.MessageList, bool) {
 	pendingCommit := n.PendingCommits()
 
 	messages := make(data.MessageList, 0)
-	for _, nodeId := range n.Neighbors {
+	for idx, nodeId := range n.Neighbors {
 		msgCore := n.NewMessageCore(nodeId, data.APPEND_MSG)
 		termCore := n.NewTermCore()
 
-		request := data.AppendEntries{
-			MessageCore: msgCore,
-			TermCore:    termCore,
-			Entries:     []data.LogEntry{},
-			// PrevLogIndex: prevLogIdx, // Preceding
-			// PrevLogTerm:  prevLogTerm,
-			// LeaderCommit: leaderCommit,
-		}
-
-		// TODO actually build the entry messages
-
-		// toSendIdx := n.State.IndexToSend(idx) // Index of new entries
+		toSendIdx := n.State.IndexToSend(idx) // Index of new entries
 		// replicatedIdx := n.State.IndexReplicated(idx) // TODO Why?
 
-		// prevLogIdx := toSendIdx - 1 // preceding
-		// prevLogTerm := n.State.Log[toSendIdx-1].Term
-		// entriesToSend := n.State.Log[toSendIdx:] // TODO batching
-		// leaderCommit := n.State.CommitIndex
+		prevLogIdx := toSendIdx - 1 // Preceding
+		entry, present := n.State.GetLogEntry(prevLogIdx)
+		prevLogTerm := n.State.CurrentTerm
+		if present {
+			prevLogTerm = entry.Term
+		}
+		leaderCommit := n.State.CommitIndex
+
+		request := data.AppendEntries{
+			MessageCore:  msgCore,
+			TermCore:     termCore,
+			Entries:      make([]data.LogEntry, 0),
+			PrevLogIndex: prevLogIdx,
+			PrevLogTerm:  prevLogTerm,
+			LeaderCommit: leaderCommit,
+		}
+
+		if toSendIdx < n.State.LastLogIndex() {
+			entriesToSend := n.State.Log[toSendIdx:] // TODO batching
+			request.Entries = entriesToSend
+		}
 
 		messages = append(messages, request)
 	}

@@ -45,6 +45,8 @@ func (n *Node) BecomeLeader() {
 	n.UnsetElectionTimeout()
 
 	n.ResetHeartbeatTimeout()
+
+	n.State.ResetLeaderIndices()
 }
 
 func (n *Node) BeginCommit() {

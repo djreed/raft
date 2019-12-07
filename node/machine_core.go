@@ -49,6 +49,7 @@ func (n *Node) StateMachineSteady() error {
 		}
 
 		if stateChange {
+			ERR.Printf("(!!! %v !!!) STATE CHANGE COMMIT -> STEADY", n.Id)
 			n.BeginCommit()
 			n.StateMachineCommit()
 			stateChange = false
@@ -101,6 +102,7 @@ func (n *Node) StateMachineCommit() error {
 		}
 
 		if stateChange {
+			ERR.Printf("(!!! %v !!!) STATE CHANGE COMMIT -> STEADY", n.Id)
 			n.EndCommit()
 			return nil
 		}
