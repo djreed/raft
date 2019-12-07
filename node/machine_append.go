@@ -22,17 +22,20 @@ func HandleAppendEntries(n *Node, appendEntries data.AppendEntries) data.Message
 		return MakeList(response)
 	}
 
-	val, exists := n.State.GetLogEntry(appendEntries.PrevLogIndex)
-	if !exists || val.Term != appendEntries.PrevLogTerm { // #2
-		return MakeList(response)
-	}
+	if 0 <= appendEntries.PrevLogIndex { // Valid index lower bound
+		val, exists := n.State.GetLogEntry(appendEntries.PrevLogIndex)
+		if !exists || val.Term != appendEntries.PrevLogTerm { // #2
+			return MakeList(response)
+		}
 
-	startingIdx := appendEntries.PrevLogIndex + 1
-	n.State.Log = append(n.State.Log[:startingIdx], appendEntries.Entries...) // #3 and #4
+		startingIdx := appendEntries.PrevLogIndex + 1
+		n.State.Log = append(n.State.Log[:startingIdx], appendEntries.Entries...) // #3 and #4
 
-	if appendEntries.LeaderCommit > n.State.CommitIndex { // #5
-		lastIdx := int(n.State.LastLogIndex()) // TODO off by one?
-		n.State.CommitIndex = data.ENTRY_INDEX(Min(int(appendEntries.LeaderCommit), lastIdx))
+		if appendEntries.LeaderCommit > n.State.CommitIndex { // #5
+			lastIdx := int(n.State.LastLogIndex()) // TODO off by one?
+			n.State.CommitIndex = data.ENTRY_INDEX(Min(int(appendEntries.LeaderCommit), lastIdx))
+		}
+
 	}
 
 	response.Success = true
@@ -84,14 +87,10 @@ func HandleAppendEntriesResponse(n *Node, appendRes data.AppendEntriesResponse, 
 
 func CalculateSentIndex(n *Node, recv data.NODE_ID) data.ENTRY_INDEX {
 	nodeIdx := n.NeighborIndex(recv)
-	replicatedIdx := n.State.IndexReplicated(nodeIdx)
-	sentCount := n.State.LastLogIndex() - replicatedIdx // TODO OBOE?
-	return replicatedIdx + sentCount
+	return n.State.IndexReplicated(nodeIdx) + 1
 }
 
 func CalculateIndexToSend(n *Node, recv data.NODE_ID) data.ENTRY_INDEX {
 	nodeIdx := n.NeighborIndex(recv)
-	startingIdx := n.State.IndexToSend(nodeIdx)
-	sentCount := n.State.LastLogIndex() - startingIdx // TODO OBOE?
-	return startingIdx + sentCount
+	return n.State.IndexToSend(nodeIdx) + 1
 }

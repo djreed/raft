@@ -30,8 +30,8 @@ func HandleHeartbeatTimeout(n *Node) (data.MessageList, bool) {
 			LeaderCommit: leaderCommit,
 		}
 
-		if toSendIdx < n.State.LastLogIndex() {
-			entriesToSend := n.State.Log[toSendIdx:] // TODO batching
+		if 0 <= toSendIdx && toSendIdx <= n.State.LastLogIndex() {
+			entriesToSend := []data.LogEntry{n.State.Log[toSendIdx]} // TODO batching
 			request.Entries = entriesToSend
 		}
 
