@@ -3,9 +3,13 @@ package node
 import (
 	"encoding/json"
 	"io"
+	"io/ioutil"
+	"sync"
 
 	"github.com/djreed/raft/data"
 )
+
+var mut sync.Mutex
 
 func JSONStreams(c io.ReadWriter) (*json.Encoder, *json.Decoder) {
 	encoder := json.NewEncoder(c)
@@ -21,13 +25,22 @@ func (n *Node) HandleConn() {
 
 	for {
 		var baseMsg data.UnknownMessage
-		if decoder.Decode(&baseMsg) != nil || baseMsg == nil {
+
+		// var rawBytes = make([2048]bytes{}, 2048)
+
+		if err := decoder.Decode(&baseMsg); err != nil || baseMsg == nil {
+			buf := decoder.Buffered()
+			OUT.Printf("(%v) FAILED TO DECODE: %v", n.Id, err)
+			b, _ := ioutil.ReadAll(buf)
+			OUT.Printf("!!!!!\n%s\n!!!", string(b))
 			continue
 		}
 
 		byteData, _ := json.Marshal(baseMsg)
 		var messageCore data.MessageCore
-		if json.Unmarshal(byteData, &messageCore) != nil {
+		if err := json.Unmarshal(byteData, &messageCore); err != nil {
+			OUT.Printf("(%v) FAILED TO DECODE MESSAGE CORE: %v", n.Id, err)
+			OUT.Printf("!!!\n%s\n!!!", string(byteData))
 			continue
 		}
 		ERR.Printf("(RECEIVED %s) -- %s\n", n.Id, string(byteData))
@@ -87,6 +100,7 @@ func (n *Node) HandleConn() {
 
 func (n *Node) SendMessage(msg interface{}) {
 	// Read from Connection
+	mut.Lock()
 	encoder, _ := JSONStreams(n.Socket)
 	err := encoder.Encode(msg)
 	if err != nil {
@@ -95,6 +109,7 @@ func (n *Node) SendMessage(msg interface{}) {
 		byteData, _ := json.Marshal(msg)
 		var m data.MessageCore
 		json.Unmarshal(byteData, &m)
-		ERR.Printf("(%v) SEND %s", n.Id, m.Type)
+		OUT.Printf("(%v) SEND %s", n.Id, m.Type)
 	}
+	mut.Unlock()
 }

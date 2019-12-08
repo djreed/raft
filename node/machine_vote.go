@@ -22,13 +22,11 @@ func HandleRequestVote(n *Node, vote data.RequestVote) data.MessageList {
 			if n.TargetUpToDate(vote.LastLogIndex, vote.LastLogTerm) {
 				response.VoteGranted = true
 				n.State.SetVotedFor(vote.CandidateId) // grant vote (§5.2, §5.4)
+				n.ResetElectionTimeout()
 			}
 		}
 	}
 
-	if !n.IsLeader() {
-		n.ResetElectionTimeout()
-	}
 	return MakeList(response)
 }
 
@@ -38,10 +36,6 @@ func HandleRequestVoteResponse(n *Node, voteRes data.RequestVoteResponse) data.M
 	// we know that we're not getting VoteGranted
 	if n.HandleTermUpdate(voteRes.TermId, data.UNKNOWN_LEADER) {
 		return nil
-	}
-
-	if !n.IsLeader() {
-		n.ResetElectionTimeout()
 	}
 
 	if voteRes.VoteGranted {

@@ -164,7 +164,6 @@ func (n *Node) HandleTermUpdate(newTerm data.TERM_ID, leader data.NODE_ID) bool 
 }
 
 func (n *Node) TargetUpToDate(lastLogIndex data.ENTRY_INDEX, lastLogTerm data.TERM_ID) bool {
-	// Not possible from state machine to have same index with differing term
 	return (lastLogIndex >= n.State.LastLogIndex()) && (lastLogTerm >= n.State.LastLogTerm())
 }
 

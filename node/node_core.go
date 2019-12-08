@@ -12,7 +12,7 @@ var OUT = logging.OUT
 var ERR = logging.ERR
 
 const (
-	CHAN_BUFFER = 128
+	CHAN_BUFFER = 9001
 )
 
 type Socket = net.Conn
