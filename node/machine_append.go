@@ -56,6 +56,7 @@ func HandleAppendEntriesResponse(n *Node, appendRes data.AppendEntriesResponse, 
 			n.IncrementReplications()
 		}
 
+		/// INDEX MANAGEMENT
 		// How many entries did we send in the AppendEntries this is responding to
 		sentCount := data.ENTRY_INDEX(0)
 		originalMessage := n.AppendMessages[appendRes.MessageId]
@@ -70,28 +71,30 @@ func HandleAppendEntriesResponse(n *Node, appendRes data.AppendEntriesResponse, 
 
 		n.State.MatchIndex[n.NeighborIndex(appendRes.Source)] = lastReplicatedIdx + sentCount
 		n.State.NextIndex[n.NeighborIndex(appendRes.Source)] = sendStartIdx + sentCount
+		/// INDEX MANAGEMENT
+
+		/// POTENTIAL RESPONSES
+		if isCommitting && n.ReplicationQuorum() {
+			messageList = make(data.MessageList, 0)
+			ERR.Printf("(%v) ___Quorum Reached___", n.Id)
+
+			// Can commit all messages on log
+			n.State.CommitAll()
+
+			// Replicated PUT(s) to quorum, can respond to client(s)
+			knownReplicatedIdx := n.LastReplicatedIdx(appendRes.Source)
+			for _, replicatedPut := range n.State.Log[knownReplicatedIdx-1:] {
+				core := n.NewMessageCoreId(replicatedPut.Sender, data.OK_MSG, replicatedPut.MID)
+				response := data.PutResponse{MessageCore: core}
+				messageList = append(messageList, response)
+			}
+		}
+		/// POTENTIAL RESPONSES
 	} else {
 		// Failure -- decrement index to search for log difference point
 		n.State.NextIndex[n.NeighborIndex(appendRes.Source)]--
 	}
 
-	messageList = make(data.MessageList, 0)
-	replicatedQuorum := n.ReplicationQuorum()
-	if replicatedQuorum {
-		ERR.Printf("(%v) ___Quorum Reached___", n.Id)
-
-		// Can commit all messages on log
-		n.State.CommitAll()
-
-		// Replicated PUT(s) to quorum, can respond to client(s)
-		knownReplicatedIdx := n.LastReplicatedIdx(appendRes.Source)
-		for _, replicatedPut := range n.State.Log[knownReplicatedIdx-1:] {
-			core := n.NewMessageCoreId(replicatedPut.Sender, data.OK_MSG, replicatedPut.MID)
-			response := data.PutResponse{MessageCore: core}
-			messageList = append(messageList, response)
-		}
-	}
-
-	stateChange = replicatedQuorum
+	stateChange = n.ReplicationQuorum()
 	return
 }
