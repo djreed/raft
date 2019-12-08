@@ -37,15 +37,12 @@ func (n *Node) StateMachineSteady() error {
 			break
 
 		case <-n.ElectionTimeout:
-			if n.IsLeader() {
-				panic("cocks")
-			}
-			ERR.Printf("(%v) -- !!! ELECTION TIMEOUT !!!", n.Id)
+			// ERR.Printf("(%v) -- !!! ELECTION TIMEOUT !!!", n.Id)
 			responses = HandleElectionTimeout(n)
 			break
 
 		case <-n.HeartbeatTimeout:
-			ERR.Printf("(%v) -- HEARTBEAT TIMEOUT FROM !!! STEADY !!!", n.Id)
+			// ERR.Printf("(%v) -- HEARTBEAT TIMEOUT FROM !!! STEADY !!!", n.Id)
 			responses, _ = HandleHeartbeatTimeout(n)
 			break
 		}
@@ -57,11 +54,11 @@ func (n *Node) StateMachineSteady() error {
 		}
 
 		if stateChange {
-			ERR.Printf("(%v) -- STATE CHANGE STEADY -> COMMIT", n.Id)
+			// ERR.Printf("(%v) -- STATE CHANGE STEADY -> COMMIT", n.Id)
 			n.BeginCommit()
 			n.StateMachineCommit()
 			stateChange = false
-			ERR.Printf("(%v) -- BACK IN STEADY", n.Id)
+			// ERR.Printf("(%v) -- BACK IN STEADY", n.Id)
 		}
 	}
 }
@@ -94,12 +91,12 @@ func (n *Node) StateMachineCommit() {
 			break
 
 		case <-n.ElectionTimeout:
-			ERR.Printf("(%v) -- !!! ELECTION TIMEOUT !!!", n.Id)
+			// ERR.Printf("(%v) -- !!! ELECTION TIMEOUT !!!", n.Id)
 			responses = HandleElectionTimeout(n)
 			break
 
 		case <-n.HeartbeatTimeout:
-			ERR.Printf("(%v) -- HEARTBEAT TIMEOUT FROM !!! COMMIT !!!", n.Id)
+			// ERR.Printf("(%v) -- HEARTBEAT TIMEOUT FROM !!! COMMIT !!!", n.Id)
 			responses, _ = HandleHeartbeatTimeout(n) // TODO handle batching
 			break
 		}
@@ -111,7 +108,7 @@ func (n *Node) StateMachineCommit() {
 		}
 
 		if stateChange {
-			ERR.Printf("(%v) -- STATE CHANGE COMMIT -> STEADY", n.Id)
+			// ERR.Printf("(%v) -- STATE CHANGE COMMIT -> STEADY", n.Id)
 			n.EndCommit()
 			return
 		}

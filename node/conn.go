@@ -14,7 +14,7 @@ func JSONStreams(c io.ReadWriter) (*json.Encoder, *json.Decoder) {
 }
 
 func (n *Node) HandleConn() {
-	ERR.Printf("(%s) Listening to Socket: %s\n", n.Id, n.Socket.RemoteAddr())
+	// ERR.Printf("(%s) Listening to Socket: %s\n", n.Id, n.Socket.RemoteAddr())
 
 	for {
 		rawBytes := make([]byte, 2048)
@@ -79,11 +79,11 @@ func (n *Node) HandleConn() {
 			break
 
 		default:
-			ERR.Panicf("(!!! %s !!!) Unknown message type: %s\n", n.Id, messageType)
+			ERR.Printf("(%s) Unknown message type: %s\n", n.Id, messageType)
 		}
 
 		if decodeErr != nil {
-			ERR.Panicf("(!!! %s !!!) %s\n", n.Id, decodeErr)
+			ERR.Panicf("(%s) %s\n", n.Id, decodeErr)
 		}
 	}
 }

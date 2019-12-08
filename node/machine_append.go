@@ -49,7 +49,7 @@ func HandleAppendEntriesResponse(n *Node, appendRes data.AppendEntriesResponse, 
 
 	if appendRes.Success {
 		if isCommitting && !n.AlreadyReplicated(appendRes.Source) && n.IsReplicationMessage(appendRes.MessageId) {
-			ERR.Printf("(%v) Replication from [%s] for '%s'\n", n.Id, appendRes.Source, appendRes.MessageId)
+			// ERR.Printf("(%v) Replication from [%s] for '%s'\n", n.Id, appendRes.Source, appendRes.MessageId)
 			n.SetReplicated(appendRes.Source)
 			n.IncrementReplications()
 		}
@@ -74,7 +74,7 @@ func HandleAppendEntriesResponse(n *Node, appendRes data.AppendEntriesResponse, 
 		/// POTENTIAL RESPONSES
 		if isCommitting && n.ReplicationQuorum() {
 			messageList = make(data.MessageList, 0)
-			ERR.Printf("(%v) ___Quorum Reached___", n.Id)
+			// ERR.Printf("(%v) ___Quorum Reached___", n.Id)
 
 			// Can commit all messages on log
 			n.State.CommitAll()

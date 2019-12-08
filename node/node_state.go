@@ -16,7 +16,7 @@ func (n *Node) BecomeFollower(leader data.NODE_ID) {
 	n.UnsetHeartbeatTimeout()
 	n.ResetElectionTimeout()
 
-	ERR.Printf("(%v) BECAME FOLLOWER", n.Id)
+	// ERR.Printf("(%v) BECAME FOLLOWER", n.Id)
 }
 
 func (n *Node) BecomeCandidate() {
@@ -31,7 +31,7 @@ func (n *Node) BecomeCandidate() {
 	n.UnsetHeartbeatTimeout()
 	n.ResetElectionTimeout()
 
-	ERR.Printf("(%v) BECAME CANDIDATE", n.Id)
+	// ERR.Printf("(%v) BECAME CANDIDATE", n.Id)
 }
 
 func (n *Node) BecomeLeader() {
@@ -46,7 +46,7 @@ func (n *Node) BecomeLeader() {
 	n.ResetHeartbeatTimeout()
 	n.State.ResetLeaderIndices()
 
-	ERR.Printf("(%v) BECAME LEADER", n.Id)
+	// ERR.Printf("(%v) BECAME LEADER", n.Id)
 }
 
 func (n *Node) BeginCommit() {
@@ -172,9 +172,6 @@ func (n *Node) PendingCommits() bool {
 // Timeout Resets
 
 func (n *Node) ResetElectionTimeout() {
-	if n.IsLeader() {
-		panic("DICKS")
-	}
 	n.ElectionTimeout = NewElectionTimeout()
 }
 
