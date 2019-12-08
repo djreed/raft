@@ -64,6 +64,7 @@ func NewNode(id data.NODE_ID, neighbors []data.NODE_ID) Node {
 
 	initialNode := Node{
 		Id:                   id,
+		Leader:               data.UNKNOWN_LEADER,
 		Neighbors:            neighbors,
 		Socket:               unixSock,
 		State:                initialRaftState,
