@@ -37,7 +37,7 @@ type RaftState struct {
 
 	// log[] log entries; each entry contains command
 	// for state machine, and term when entry
-	// was received by leader (first index is 1) (TODO validate indices checking)
+	// was received by leader (first index is 1)
 	Log []LogEntry
 
 	// The actual key<>value store, built from the Log above
@@ -180,5 +180,5 @@ func (s *RaftState) VoteCandidate() NODE_ID {
 }
 
 func (s *RaftState) ResetVotedFor() {
-  s.VotedFor = ""
+	s.VotedFor = ""
 }

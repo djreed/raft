@@ -2,7 +2,6 @@ package node
 
 import "github.com/djreed/raft/data"
 
-// TODO if we get a term > currentTerm, convert to Follower, set term to higher
 func HandleRequestVote(n *Node, vote data.RequestVote) data.MessageList {
 	n.HandleTermUpdate(vote.TermId, data.UNKNOWN_LEADER)
 
@@ -30,7 +29,6 @@ func HandleRequestVote(n *Node, vote data.RequestVote) data.MessageList {
 	return MakeList(response)
 }
 
-// TODO handle term > currentTerm
 func HandleRequestVoteResponse(n *Node, voteRes data.RequestVoteResponse) data.MessageList {
 	// If the term of the response is greater than our own,
 	// we know that we're not getting VoteGranted

@@ -40,8 +40,8 @@ func HandleHeartbeatTimeout(n *Node) (data.MessageList, bool) {
 			request.Entries = n.State.Log[sendStartIdx-1 : (sendStartIdx-1)+data.ENTRY_INDEX(toSendCount)]
 			messagesSent := len(request.Entries)
 
-			// Is non-committed data being sent
-			lastIndexSent := int(sendStartIdx) + messagesSent - 1 // TODO validate minus 1
+			// Is non-committed data being sent?
+			lastIndexSent := int(sendStartIdx) + messagesSent - 1
 			if lastIndexSent > int(n.State.CommitIndex) {
 				n.AddReplicationMid(request.MessageId)
 			}

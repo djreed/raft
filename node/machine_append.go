@@ -4,9 +4,8 @@ import (
 	"github.com/djreed/raft/data"
 )
 
-// TODO if we get a term > currentTerm, convert to Follower, set term to higher
 func HandleAppendEntries(n *Node, appendEntries data.AppendEntries) data.MessageList {
-	n.SetLeader(appendEntries.Leader) // TODO validate in proper world
+	n.SetLeader(appendEntries.Leader)
 	n.HandleTermUpdate(appendEntries.TermId, appendEntries.Leader)
 	if !n.IsLeader() {
 		n.ResetElectionTimeout()
@@ -35,7 +34,7 @@ func HandleAppendEntries(n *Node, appendEntries data.AppendEntries) data.Message
 	n.State.Log = append(n.State.Log[:newLogsIdx-1], appendEntries.Entries...) // #3 and #4
 
 	if appendEntries.LeaderCommit > n.State.CommitIndex { // #5
-		endOfLogIdx := int(n.State.LastLogIndex()) // TODO off by one?
+		endOfLogIdx := int(n.State.LastLogIndex())
 		n.State.CommitIndex = data.ENTRY_INDEX(Min(int(appendEntries.LeaderCommit), endOfLogIdx))
 	}
 
@@ -43,7 +42,6 @@ func HandleAppendEntries(n *Node, appendEntries data.AppendEntries) data.Message
 }
 
 func HandleAppendEntriesResponse(n *Node, appendRes data.AppendEntriesResponse, isCommitting bool) (messageList data.MessageList, stateChange bool) {
-	// TODO Handle term mismatch
 	if n.HandleTermUpdate(appendRes.TermId, data.UNKNOWN_LEADER) {
 		stateChange = true
 		return
