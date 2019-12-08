@@ -21,7 +21,7 @@ func (n *Node) BecomeFollower(leader data.NODE_ID) {
 
 func (n *Node) BecomeCandidate() {
 	n.SetRole(data.CANDIDATE)
-	n.SetLeader(data.UNKNOWN_LEADER)
+	// n.SetLeader(data.UNKNOWN_LEADER)
 
 	n.ResetQuorum()
 
