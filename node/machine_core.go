@@ -38,7 +38,7 @@ func (n *Node) StateMachineSteady() error {
 
 		case <-n.ElectionTimeout:
 			if n.IsLeader() {
-				panic("Cocks")
+				panic("cocks")
 			}
 			ERR.Printf("(%v) -- !!! ELECTION TIMEOUT !!!", n.Id)
 			responses = HandleElectionTimeout(n)

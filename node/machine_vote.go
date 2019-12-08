@@ -39,11 +39,13 @@ func HandleRequestVoteResponse(n *Node, voteRes data.RequestVoteResponse) data.M
 	}
 
 	if voteRes.VoteGranted {
-		n.IncrementVotes()
-		if n.VoteQuorum() {
-			ERR.Printf("(%v) !!! I AM NOW THE LEADER, BOW BEFORE ME !!!", n.Id)
-			n.BecomeLeader()
-			HandleHeartbeatTimeout(n)
+		if !n.IsLeader() {
+			n.IncrementVotes()
+			if n.VoteQuorum() {
+				ERR.Printf("(%v) !!! I AM NOW THE LEADER, BOW BEFORE ME !!!", n.Id)
+				n.BecomeLeader()
+				HandleHeartbeatTimeout(n)
+			}
 		}
 	}
 

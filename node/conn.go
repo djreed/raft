@@ -3,12 +3,9 @@ package node
 import (
 	"encoding/json"
 	"io"
-	"sync"
 
 	"github.com/djreed/raft/data"
 )
-
-var mut sync.Mutex
 
 func JSONStreams(c io.ReadWriter) (*json.Encoder, *json.Decoder) {
 	encoder := json.NewEncoder(c)
@@ -39,7 +36,7 @@ func (n *Node) HandleConn() {
 
 		messageType := messageCore.Type
 
-		ERR.Printf("(%v) RECV %s", n.Id, messageType)
+		// ERR.Printf("(%v) RECV %s", n.Id, messageType)
 
 		// Decode JSON into correct message type
 		// Send along corresponding channel
@@ -93,16 +90,14 @@ func (n *Node) HandleConn() {
 
 func (n *Node) SendMessage(msg interface{}) {
 	// Read from Connection
-	mut.Lock()
 	encoder, _ := JSONStreams(n.Socket)
 	err := encoder.Encode(msg)
 	if err != nil {
 		ERR.Panicf("(%s) Failed to encode: %s\n", n.Id, err)
 	} else {
-		byteData, _ := json.Marshal(msg)
-		var m data.MessageCore
-		json.Unmarshal(byteData, &m)
-		ERR.Printf("(%v) SEND %s", n.Id, m.Type)
+		// byteData, _ := json.Marshal(msg)
+		// var m data.MessageCore
+		// json.Unmarshal(byteData, &m)
+		// ERR.Printf("(%v) SEND %s", n.Id, m.Type)
 	}
-	mut.Unlock()
 }

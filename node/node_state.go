@@ -13,9 +13,8 @@ func (n *Node) BecomeFollower(leader data.NODE_ID) {
 
 	n.ResetQuorum()
 
-	n.ResetElectionTimeout()
-
 	n.UnsetHeartbeatTimeout()
+	n.ResetElectionTimeout()
 
 	ERR.Printf("(%v) BECAME FOLLOWER", n.Id)
 }
@@ -29,9 +28,9 @@ func (n *Node) BecomeCandidate() {
 	n.State.IncrementTerm()
 	n.VoteForSelf()
 
+	n.UnsetHeartbeatTimeout()
 	n.ResetElectionTimeout()
 
-	n.UnsetHeartbeatTimeout()
 	ERR.Printf("(%v) BECAME CANDIDATE", n.Id)
 }
 
@@ -44,10 +43,9 @@ func (n *Node) BecomeLeader() {
 	n.State.CommitAll()
 
 	n.UnsetElectionTimeout()
-
 	n.ResetHeartbeatTimeout()
-
 	n.State.ResetLeaderIndices()
+
 	ERR.Printf("(%v) BECAME LEADER", n.Id)
 }
 
@@ -149,7 +147,7 @@ func (n *Node) SetLeader(leader data.NODE_ID) {
 }
 
 func (n *Node) IsLeader() bool {
-	return n.Id == n.Leader
+	return n.Leader == n.Id
 }
 
 // Terms
@@ -157,8 +155,8 @@ func (n *Node) IsLeader() bool {
 func (n *Node) HandleTermUpdate(newTerm data.TERM_ID, leader data.NODE_ID) bool {
 	shouldUpdate := n.State.CurrentTerm < newTerm
 	if shouldUpdate {
-		n.BecomeFollower(leader)
 		n.State.SetTerm(newTerm)
+		n.BecomeFollower(leader)
 	}
 	return shouldUpdate
 }
@@ -175,10 +173,8 @@ func (n *Node) PendingCommits() bool {
 
 func (n *Node) ResetElectionTimeout() {
 	if n.IsLeader() {
-		ERR.Printf("(%v)\n\n\n\n\n\n\n\n\n\n\n_STOP_\n\n\n\n\n\n\n\n\n\n\n", n.Id)
-		return
+		panic("DICKS")
 	}
-	// ERR.Printf("(%v) RESET ELECTION TIMEOUT", n.Id)
 	n.ElectionTimeout = NewElectionTimeout()
 }
 

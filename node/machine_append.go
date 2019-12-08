@@ -44,7 +44,7 @@ func HandleAppendEntries(n *Node, appendEntries data.AppendEntries) data.Message
 
 func HandleAppendEntriesResponse(n *Node, appendRes data.AppendEntriesResponse, isCommitting bool) (messageList data.MessageList, stateChange bool) {
 	// TODO Handle term mismatch
-	if n.HandleTermUpdate(appendRes.TermId, appendRes.Leader) {
+	if n.HandleTermUpdate(appendRes.TermId, data.UNKNOWN_LEADER) {
 		stateChange = true
 		return
 	} // Past here, our term == appendRes.TermId
