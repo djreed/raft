@@ -139,11 +139,19 @@ func (s *RaftState) AppendLog(entries ...LogEntry) {
 func (s *RaftState) CommitAll() {
 	lastIndex := s.LastLogIndex()
 	s.CommitTo(lastIndex)
-	s.CommitIndex = lastIndex
 }
 
 func (s *RaftState) CommitTo(commitTo ENTRY_INDEX) {
-	for idx := s.LastApplied + 1; idx <= commitTo; idx++ {
+	s.CommitIndex = commitTo
+}
+
+func (s *RaftState) ApplyAll() {
+	lastIndex := s.LastLogIndex()
+	s.ApplyTo(lastIndex)
+}
+
+func (s *RaftState) ApplyTo(applyTo ENTRY_INDEX) {
+	for idx := s.LastApplied + 1; idx <= applyTo; idx++ {
 		s.LastApplied = ENTRY_INDEX(idx)
 		s.ApplyEntry(s.Log[idx-1])
 	}

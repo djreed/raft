@@ -100,6 +100,6 @@ func (n *Node) SendMessage(msg interface{}) {
 		// byteData, _ := json.Marshal(msg)
 		// var m data.MessageCore
 		// json.Unmarshal(byteData, &m)
-		// ERR.Printf("(%v) SEND %s", n.Id, m.Type)
+		// ERR.Printf("(%v) SEND %s %s", n.Id, m.Type, m.MessageId)
 	}
 }

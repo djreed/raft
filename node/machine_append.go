@@ -77,15 +77,17 @@ func HandleAppendEntriesResponse(n *Node, appendRes data.AppendEntriesResponse, 
 			// ERR.Printf("(%v) ___Quorum Reached___", n.Id)
 
 			// Can commit all messages on log
-			n.State.CommitAll()
+			n.State.ApplyAll()
 
 			// Replicated PUT(s) to quorum, can respond to client(s)
-			knownReplicatedIdx := n.LastReplicatedIdx(appendRes.Source)
-			for _, replicatedPut := range n.State.Log[knownReplicatedIdx-1:] {
+			// NOTE, everything _after_ commitIdx, hence no -1
+			for _, replicatedPut := range n.State.Log[n.State.CommitIndex:] {
 				core := n.NewMessageCoreId(replicatedPut.Sender, data.OK_MSG, replicatedPut.MID)
 				response := data.PutResponse{MessageCore: core}
 				messageList = append(messageList, response)
 			}
+
+			n.State.CommitAll()
 		}
 		/// POTENTIAL RESPONSES
 	} else {
