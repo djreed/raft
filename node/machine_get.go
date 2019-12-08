@@ -16,7 +16,7 @@ func HandleGet(n *Node, get data.GetMessage) data.MessageList {
 		// Redirect
 		core := n.NewMessageCoreId(get.Source, data.REDIRECT_MSG, get.MessageId)
 		if n.Leader == data.UNKNOWN_LEADER {
-			core.Type = data.REDIRECT_MSG // No known leader, unable to redirect (nevermind)
+			core.Type = data.REDIRECT_MSG // No known leader, unable to redirect
 		}
 		return MakeList(core)
 	}
