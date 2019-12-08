@@ -40,6 +40,7 @@ func (n *Node) BecomeLeader() {
 
 	n.ResetQuorum()
 
+	n.State.ApplyAll()
 	n.State.CommitAll()
 
 	n.UnsetElectionTimeout()
