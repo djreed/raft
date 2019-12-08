@@ -82,7 +82,7 @@ func HandleAppendEntriesResponse(n *Node, appendRes data.AppendEntriesResponse, 
 		n.State.CommitAll()
 
 		// Replicated PUT(s) to quorum, can respond to client(s)
-		knownReplicatedIdx := n.State.MatchIndex[n.NeighborIndex(appendRes.Source)]
+		knownReplicatedIdx := n.LastReplicatedIdx(appendRes.Source)
 		for _, replicatedPut := range n.State.Log[knownReplicatedIdx-1:] {
 			core := n.NewMessageCoreId(replicatedPut.Sender, data.OK_MSG, replicatedPut.MID)
 			response := data.PutResponse{MessageCore: core}
