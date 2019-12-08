@@ -30,9 +30,10 @@ func (n *Node) HandleConn() {
 		if json.Unmarshal(byteData, &messageCore) != nil {
 			continue
 		}
-		// ERR.Printf("(RECEIVED %s) -- %s\n", n.Id, string(byteData))
+		ERR.Printf("(RECEIVED %s) -- %s\n", n.Id, string(byteData))
 
 		messageType := messageCore.Type
+		OUT.Printf("(%v) RECV %s", n.Id, messageType)
 
 		// Decode JSON into correct message type
 		// Send along corresponding channel
@@ -91,7 +92,9 @@ func (n *Node) SendMessage(msg interface{}) {
 	if err != nil {
 		ERR.Panicf("(!!! %s !!!) -- %s\n", n.Id, err)
 	} else {
-		// byteData, _ := json.Marshal(msg)
-		// ERR.Printf("(SENDING %s) -- %s", n.Id, string(byteData))
+		byteData, _ := json.Marshal(msg)
+		var m data.MessageCore
+		json.Unmarshal(byteData, &m)
+		ERR.Printf("(%v) SEND %s", n.Id, m.Type)
 	}
 }

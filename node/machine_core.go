@@ -39,10 +39,6 @@ func (n *Node) StateMachineSteady() error {
 		case <-n.ElectionTimeout:
 			if n.IsLeader() {
 				ERR.Print("\n\n\n\n\n\n\n\n\n\n\nWHAT THE FUCK\n\n\n\n\n\n\n\n\n\n\n\n\n")
-				ERR.Print("\n\n\n\n\n\n\n\n\n\n\nWHAT THE FUCK\n\n\n\n\n\n\n\n\n\n\n\n\n")
-				ERR.Print("\n\n\n\n\n\n\n\n\n\n\nWHAT THE FUCK\n\n\n\n\n\n\n\n\n\n\n\n\n")
-				ERR.Print("\n\n\n\n\n\n\n\n\n\n\nWHAT THE FUCK\n\n\n\n\n\n\n\n\n\n\n\n\n")
-				ERR.Print("\n\n\n\n\n\n\n\n\n\n\nWHAT THE FUCK\n\n\n\n\n\n\n\n\n\n\n\n\n")
 			}
 			ERR.Printf("(%v) -- !!! ELECTION TIMEOUT !!!", n.Id)
 			responses = HandleElectionTimeout(n)

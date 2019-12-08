@@ -8,7 +8,9 @@ import (
 func HandleAppendEntries(n *Node, appendEntries data.AppendEntries) data.MessageList {
 	n.SetLeader(appendEntries.Leader) // TODO validate in proper world
 	n.HandleTermUpdate(appendEntries.TermId, appendEntries.Leader)
-	n.ResetElectionTimeout()
+	if !n.IsLeader() {
+		n.ResetElectionTimeout()
+	}
 
 	core := n.NewMessageCoreId(appendEntries.Source, data.APPEND_RES_MSG, appendEntries.MessageId)
 	termCore := n.NewTermCore()

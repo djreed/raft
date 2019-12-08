@@ -175,6 +175,10 @@ func (n *Node) PendingCommits() bool {
 // Timeout Resets
 
 func (n *Node) ResetElectionTimeout() {
+	if n.IsLeader() {
+		ERR.Printf("(%v)\n\n\n\n\n\n\n\n\n\n\n_STOP_\n\n\n\n\n\n\n\n\n\n\n", n.Id)
+		return
+	}
 	// ERR.Printf("(%v) RESET ELECTION TIMEOUT", n.Id)
 	n.ElectionTimeout = NewElectionTimeout()
 }

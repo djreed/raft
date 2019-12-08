@@ -26,7 +26,9 @@ func HandleRequestVote(n *Node, vote data.RequestVote) data.MessageList {
 		}
 	}
 
-	n.ResetElectionTimeout()
+	if !n.IsLeader() {
+		n.ResetElectionTimeout()
+	}
 	return MakeList(response)
 }
 
