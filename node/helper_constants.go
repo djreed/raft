@@ -5,7 +5,7 @@ import "time"
 const (
 	electRange    = 200
 	electBase     = time.Duration(300 * time.Millisecond)
-	heartbeatBase = electBase / 20
+	heartbeatBase = electBase / 5
 )
 
 func Min(x, y int) int {
