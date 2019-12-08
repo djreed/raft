@@ -3,7 +3,6 @@ package node
 import (
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"sync"
 
 	"github.com/djreed/raft/data"
@@ -20,33 +19,27 @@ func JSONStreams(c io.ReadWriter) (*json.Encoder, *json.Decoder) {
 func (n *Node) HandleConn() {
 	ERR.Printf("(%s) Listening to Socket: %s\n", n.Id, n.Socket.RemoteAddr())
 
-	// Read from Connection
-	_, decoder := JSONStreams(n.Socket)
-
 	for {
-		var baseMsg data.UnknownMessage
-
-		// var rawBytes = make([2048]bytes{}, 2048)
-
-		if err := decoder.Decode(&baseMsg); err != nil || baseMsg == nil {
-			buf := decoder.Buffered()
-			OUT.Printf("(%v) FAILED TO DECODE: %v", n.Id, err)
-			b, _ := ioutil.ReadAll(buf)
-			OUT.Printf("!!!!!\n%s\n!!!", string(b))
+		rawBytes := make([]byte, 2048)
+		read, err := n.Socket.Read(rawBytes)
+		if err != nil {
+			// ERR.Printf("(%v) Failed to decode raw bytes:\n%s", n.Id, string(rawBytes))
 			continue
 		}
 
-		byteData, _ := json.Marshal(baseMsg)
+		byteData := rawBytes[:read]
+
 		var messageCore data.MessageCore
 		if err := json.Unmarshal(byteData, &messageCore); err != nil {
-			OUT.Printf("(%v) FAILED TO DECODE MESSAGE CORE: %v", n.Id, err)
-			OUT.Printf("!!!\n%s\n!!!", string(byteData))
+			// ERR.Printf("(%v) Failed to decode message core: %v", n.Id, err)
+			// ERR.Printf("!!!\n%s", string(byteData))
 			continue
 		}
-		ERR.Printf("(RECEIVED %s) -- %s\n", n.Id, string(byteData))
+		// ERR.Printf("(RECEIVED %s) -- %s\n", n.Id, string(byteData))
 
 		messageType := messageCore.Type
-		OUT.Printf("(%v) RECV %s", n.Id, messageType)
+
+		ERR.Printf("(%v) RECV %s", n.Id, messageType)
 
 		// Decode JSON into correct message type
 		// Send along corresponding channel
@@ -89,7 +82,7 @@ func (n *Node) HandleConn() {
 			break
 
 		default:
-			ERR.Panicf("(!!! %s !!!) Unknown message type: %s\n", n.Id, baseMsg["type"])
+			ERR.Panicf("(!!! %s !!!) Unknown message type: %s\n", n.Id, messageType)
 		}
 
 		if decodeErr != nil {
@@ -104,12 +97,12 @@ func (n *Node) SendMessage(msg interface{}) {
 	encoder, _ := JSONStreams(n.Socket)
 	err := encoder.Encode(msg)
 	if err != nil {
-		ERR.Panicf("(!!! %s !!!) -- %s\n", n.Id, err)
+		ERR.Panicf("(%s) Failed to encode: %s\n", n.Id, err)
 	} else {
 		byteData, _ := json.Marshal(msg)
 		var m data.MessageCore
 		json.Unmarshal(byteData, &m)
-		OUT.Printf("(%v) SEND %s", n.Id, m.Type)
+		ERR.Printf("(%v) SEND %s", n.Id, m.Type)
 	}
 	mut.Unlock()
 }

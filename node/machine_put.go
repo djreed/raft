@@ -19,7 +19,7 @@ func HandlePut(n *Node, put data.PutMessage) data.MessageList {
 		// Redirect
 		core := n.NewMessageCoreId(put.Source, data.REDIRECT_MSG, put.MessageId)
 		if n.Leader == data.UNKNOWN_LEADER {
-			core.Type = data.FAIL_MSG // No known leader, unable to redirect
+			core.Type = data.REDIRECT_MSG // No known leader, unable to redirect
 		}
 		return MakeList(core)
 	}
