@@ -22,6 +22,6 @@ bundle:
 	tar -czvf $(OUTFILE).tar.gz $(PROJECT_GOFILES)
 
 copy:
-	scp -r $(OUTFILE).tar.gz reedda@login.ccs.neu.edu:/home/reedda/cs3700/raft
+	scp -r $(OUTFILE).tar.gz reedda@gordon.ccs.neu.edu:/home/reedda/cs3700/raft
 
 publish: vendor bundle copy

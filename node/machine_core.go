@@ -22,7 +22,7 @@ func (n *Node) StateMachineSteady() error {
 
 		case rv := <-n.RequestVotes:
 			b, _ := json.Marshal(rv)
-			ERR.Printf("(%v) -- Received RequestVote (STEADY): %s", n.Id, string(b))
+			ERR.Printf("(%v) -- Received RequestVote: %s", n.Id, string(b))
 
 			responses = HandleRequestVote(n, rv)
 
@@ -47,6 +47,13 @@ func (n *Node) StateMachineSteady() error {
 			break
 
 		case <-n.ElectionTimeout:
+			if n.IsLeader() {
+				ERR.Print("\n\n\n\n\n\n\n\n\n\n\nWHAT THE FUCK\n\n\n\n\n\n\n\n\n\n\n\n\n")
+				ERR.Print("\n\n\n\n\n\n\n\n\n\n\nWHAT THE FUCK\n\n\n\n\n\n\n\n\n\n\n\n\n")
+				ERR.Print("\n\n\n\n\n\n\n\n\n\n\nWHAT THE FUCK\n\n\n\n\n\n\n\n\n\n\n\n\n")
+				ERR.Print("\n\n\n\n\n\n\n\n\n\n\nWHAT THE FUCK\n\n\n\n\n\n\n\n\n\n\n\n\n")
+				ERR.Print("\n\n\n\n\n\n\n\n\n\n\nWHAT THE FUCK\n\n\n\n\n\n\n\n\n\n\n\n\n")
+			}
 			ERR.Printf("(%v) -- !!! ELECTION TIMEOUT !!!", n.Id)
 			responses = HandleElectionTimeout(n)
 			ERR.Printf("(%v) -- Sending RequestVotes:", n.Id)
@@ -96,7 +103,7 @@ func (n *Node) StateMachineCommit() {
 
 		case rv := <-n.RequestVotes:
 			b, _ := json.Marshal(rv)
-			ERR.Printf("(%v) -- Received RequestVote (STEADY): %s", n.Id, string(b))
+			ERR.Printf("(%v) -- Received RequestVote: %s", n.Id, string(b))
 
 			responses = HandleRequestVote(n, rv)
 

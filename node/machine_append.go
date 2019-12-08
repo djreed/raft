@@ -6,9 +6,9 @@ import (
 
 // TODO if we get a term > currentTerm, convert to Follower, set term to higher
 func HandleAppendEntries(n *Node, appendEntries data.AppendEntries) data.MessageList {
+	n.SetLeader(appendEntries.Leader) // TODO validate in proper world
 	n.HandleTermUpdate(appendEntries.TermId, appendEntries.Leader)
 	n.ResetElectionTimeout()
-	n.SetLeader(appendEntries.Leader) // TODO validate in proper world
 
 	core := n.NewMessageCoreId(appendEntries.Source, data.APPEND_RES_MSG, appendEntries.MessageId)
 	termCore := n.NewTermCore()
