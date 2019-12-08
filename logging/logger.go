@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const LOG_FLAGS = log.Ltime | log.Lmicroseconds | log.Lshortfile
+const LOG_FLAGS = log.Ltime | log.Lmicroseconds
 
 var StdOutLogger = MakeLogger(os.Stdout)
 var StdErrLogger = MakeLogger(os.Stderr)
