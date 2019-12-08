@@ -1,8 +1,6 @@
 package node
 
 import (
-	"encoding/json"
-
 	"github.com/djreed/raft/data"
 )
 
@@ -12,7 +10,6 @@ func (n *Node) StateMachineSteady() error {
 		var responses []interface{}
 		select {
 		case rvr := <-n.RequestVoteResponses:
-			ERR.Printf("(%v) -- Received RequestVoteResponse from [%v]: %v", n.Id, rvr.Source, rvr.VoteGranted)
 			responses = HandleRequestVoteResponse(n, rvr)
 			break
 
@@ -21,14 +18,7 @@ func (n *Node) StateMachineSteady() error {
 			break
 
 		case rv := <-n.RequestVotes:
-			b, _ := json.Marshal(rv)
-			ERR.Printf("(%v) -- Received RequestVote: %s", n.Id, string(b))
-
 			responses = HandleRequestVote(n, rv)
-
-			b2, _ := json.Marshal(responses[0])
-			ERR.Printf("(%v) -- Sending RequestVoteResponse: %s", n.Id, string(b2))
-
 			break
 
 		case ae := <-n.AppendEntries:
@@ -56,11 +46,6 @@ func (n *Node) StateMachineSteady() error {
 			}
 			ERR.Printf("(%v) -- !!! ELECTION TIMEOUT !!!", n.Id)
 			responses = HandleElectionTimeout(n)
-			ERR.Printf("(%v) -- Sending RequestVotes:", n.Id)
-			for _, res := range responses {
-				b, _ := json.Marshal(res)
-				ERR.Printf("%v", string(b))
-			}
 			break
 
 		case <-n.HeartbeatTimeout:
@@ -76,11 +61,11 @@ func (n *Node) StateMachineSteady() error {
 		}
 
 		if stateChange {
-			ERR.Printf("(!!! %v !!!) -- STATE CHANGE STEADY -> COMMIT", n.Id)
+			ERR.Printf("(%v) -- STATE CHANGE STEADY -> COMMIT", n.Id)
 			n.BeginCommit()
 			n.StateMachineCommit()
 			stateChange = false
-			ERR.Printf("(!!! %v !!!) -- BACK IN STEADY", n.Id)
+			ERR.Printf("(%v) -- BACK IN STEADY", n.Id)
 		}
 	}
 }
@@ -91,8 +76,6 @@ func (n *Node) StateMachineCommit() {
 		var responses []interface{}
 		select {
 		case rvr := <-n.RequestVoteResponses:
-			ERR.Printf("(%v) -- Received RequestVoteResponse from [%v]: %v", n.Id, rvr.Source, rvr.VoteGranted)
-
 			responses = HandleRequestVoteResponse(n, rvr)
 			stateChange = true // On election, drop back down to Steady
 			break
@@ -102,14 +85,7 @@ func (n *Node) StateMachineCommit() {
 			break
 
 		case rv := <-n.RequestVotes:
-			b, _ := json.Marshal(rv)
-			ERR.Printf("(%v) -- Received RequestVote: %s", n.Id, string(b))
-
 			responses = HandleRequestVote(n, rv)
-
-			b2, _ := json.Marshal(responses[0])
-			ERR.Printf("(%v) -- Sending RequestVoteResponse: %s", n.Id, string(b2))
-
 			stateChange = true // On election, drop back down to steady
 			break
 
@@ -139,7 +115,7 @@ func (n *Node) StateMachineCommit() {
 		}
 
 		if stateChange {
-			ERR.Printf("(!!! %v !!!) -- STATE CHANGE COMMIT -> STEADY", n.Id)
+			ERR.Printf("(%v) -- STATE CHANGE COMMIT -> STEADY", n.Id)
 			n.EndCommit()
 			return
 		}

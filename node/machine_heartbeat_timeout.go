@@ -7,7 +7,7 @@ const BATCH_SIZE = 10
 func HandleHeartbeatTimeout(n *Node) (data.MessageList, bool) {
 	messages := make(data.MessageList, 0)
 
-	ERR.Printf("(!!! %v !!!) -- lastLogIdx(%v) | nextIdxToSend(%+v)",
+	ERR.Printf("(%v) -- Heartbeat State: lastLogIdx(%v) | nextIdxToSend(%+v)",
 		n.Id, n.State.LastLogIndex(), n.State.NextIndex)
 
 	for _, nodeId := range n.Neighbors {
