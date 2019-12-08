@@ -26,9 +26,13 @@ func (n *Node) HandleConn() {
 		}
 
 		byteData, _ := json.Marshal(baseMsg)
+		var messageCore data.MessageCore
+		if json.Unmarshal(byteData, &messageCore) != nil {
+			continue
+		}
 		// ERR.Printf("(RECEIVED %s) -- %s\n", n.Id, string(byteData))
 
-		messageType := data.MSG_TYPE(baseMsg["type"].(string))
+		messageType := messageCore.Type
 
 		// Decode JSON into correct message type
 		// Send along corresponding channel
