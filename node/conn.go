@@ -7,6 +7,8 @@ import (
 	"github.com/djreed/raft/data"
 )
 
+const READ_BUFFER_SIZE = 2048
+
 func JSONStreams(c io.ReadWriter) (*json.Encoder, *json.Decoder) {
 	encoder := json.NewEncoder(c)
 	decoder := json.NewDecoder(c)
@@ -17,7 +19,7 @@ func (n *Node) HandleConn() {
 	// ERR.Printf("(%s) Listening to Socket: %s\n", n.Id, n.Socket.RemoteAddr())
 
 	for {
-		rawBytes := make([]byte, 2048)
+		rawBytes := make([]byte, READ_BUFFER_SIZE)
 		read, err := n.Socket.Read(rawBytes)
 		if err != nil {
 			// ERR.Printf("(%v) Failed to decode raw bytes:\n%s", n.Id, string(rawBytes))

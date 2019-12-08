@@ -118,7 +118,7 @@ func (s *RaftState) LastLogTerm() TERM_ID {
 	if idx > 0 {
 		return s.Log[idx-1].Term
 	} else {
-		return 0 // TODO: Validate correct default
+		return 0
 	}
 }
 
@@ -143,7 +143,7 @@ func (s *RaftState) CommitAll() {
 }
 
 func (s *RaftState) CommitTo(commitTo ENTRY_INDEX) {
-	for idx := s.LastApplied + 1; /* TODO validate the `+1` here */ idx <= commitTo; idx++ {
+	for idx := s.LastApplied + 1; idx <= commitTo; idx++ {
 		s.LastApplied = ENTRY_INDEX(idx)
 		s.ApplyEntry(s.Log[idx-1])
 	}
